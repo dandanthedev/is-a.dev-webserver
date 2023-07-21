@@ -28,7 +28,7 @@
       width="100px"
       height="100px"
     />
-    <span id="typehere" class="display-inline-block cursor-pointer">
+    <span id="typehere" class="display-inline-block">
       <noscript> This page was not found. </noscript>
     </span>
   </body>
@@ -52,10 +52,5 @@
       //loop
       loop: true,
     });
-    document.getElementById("typehere").onclick = function () {
-      window.location.href = `https://manage.is-a.dev/domains/${
-        window.location.hostname.split(".is-a.dev")[0]
-      }`;
-    };
   </script>
 </html>
