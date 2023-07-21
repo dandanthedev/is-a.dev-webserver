@@ -8,9 +8,9 @@ const ftpServer = new FtpSrv({
 
 ftpServer.on('login', ({ connection, username, password }, resolve, reject) => { 
     try{
-    if(!fs.existsSync(`${__dirname}/../content/${username}`)) return reject('User does not exist');
-    if(!fs.existsSync(`${__dirname}/../content/${username}/config.json`)) return reject('Config does not exist');
-    let config = fs.readFileSync(`${__dirname}/../content/${username}/config.json`);
+    if(!fs.existsSync(`content/${username}`)) return reject('User does not exist');
+    if(!fs.existsSync(`content/${username}/config.json`)) return reject('Config does not exist');
+    let config = fs.readFileSync(`content/${username}/config.json`);
     config = JSON.parse(config);
 
     if(!config.ftp) return reject('FTP is disabled for this user');
@@ -20,7 +20,7 @@ ftpServer.on('login', ({ connection, username, password }, resolve, reject) => {
         return reject('Invalid username');
 
 
-    return resolve({ root: `${__dirname}/../content/${username}` });
+    return resolve({ root: `content/${username}` });
     }catch(err){
         console.log(err);
         return reject('Internal server error');
