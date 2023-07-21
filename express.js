@@ -17,12 +17,51 @@ app.use(express.json())
 
 
 const fs = require('fs');
+const { getJWT } = require('./jwt')
+
+//api routes
+app.get('/api/register', async(req, res) => {
+    try{
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+
+    let user = getJWT(jwt);
+    if(!user) return res.status(403).send('Invalid JWT');
+
+    let data = await fetch(process.env.API_URL + '/domains/' + domain + "/get");
+    data = await data.json();
+
+    if(data.error) return res.status(500).send(data.error);
+    if(data.owner?.username != user.user.login) return res.status(403).json({ error: 'You are not the owner of this domain' });
+  
+
+    //check if directory content/host exists
+    if(fs.existsSync(`content/${domain}`)) return res.status(400).json({ error: 'Domain already exists' });
+    
+    //duplicate skeleton
+    fs.mkdirSync(`content/${domain}`);
+    let files = fs.readdirSync('skeleton');
+    for(let file of files){
+        fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
+    }
+
+    return res.json({ success: true });
+
+}catch(err){
+    console.log(err);
+    return res.status(500).json({ error: err });
+}
+
+    })
+
+
 app.get('*', async(req, res) => {
     try{
 
     //Domain variable
     let domain = req.headers.host;
     domain = domain.split(':')[0];
+    domain = `${domain}.is-a.dev`;
 
     //Check if the domain exists
     if(!fs.existsSync(`content/${domain}`)) 
@@ -35,7 +74,7 @@ app.get('*', async(req, res) => {
     //Password protection
     if(config.password &&
          typeof req.session.authenticated == 'undefined' ||
-         !req.session.authenticated.includes(domain)) return res.sendFile(__dirname + '/login.html');
+         !req?.session?.authenticated?.includes(domain)) return res.sendFile(__dirname + '/login.html');
     
     //Get file
     let file = req.url;
@@ -64,6 +103,7 @@ app.post('*', (req, res) => {
     try{
     let domain = req.headers.host;
     domain = domain.split(':')[0];
+    domain = `${domain}.is-a.dev`;
     console.log(domain);
     //check if directory content/host exists
     if(!fs.existsSync(`content/${domain}`)) return res.status(404).sendFile(__dirname + '/404.html');
@@ -81,6 +121,9 @@ app.post('*', (req, res) => {
         return res.status(500).sendFile(__dirname + '/500.html');
     }
 })
+
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
