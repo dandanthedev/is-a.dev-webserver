@@ -66,7 +66,7 @@ app.get('*', async(req, res) => {
     //Domain variable
     let domain = req.headers.host;
     domain = domain.split(':')[0];
-    domain = `${domain}.is-a.dev`;
+    domain = domain.split(".is-a.dev")[0];
 
     //Check if the domain exists
     if(!fs.existsSync(`content/${domain}`)) 
@@ -108,8 +108,8 @@ app.post('*', (req, res) => {
     try{
     let domain = req.headers.host;
     domain = domain.split(':')[0];
-    domain = `${domain}.is-a.dev`;
-    console.log(domain);
+    domain = domain.split(".is-a.dev")[0];
+
     //check if directory content/host exists
     if(!fs.existsSync(`content/${domain}`)) return res.status(404).sendFile(__dirname + '/404.html');
     let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
