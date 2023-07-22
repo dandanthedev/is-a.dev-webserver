@@ -77,10 +77,8 @@ app.get('*', async(req, res) => {
     config = JSON.parse(config);
 
     //Password protection
-    if(config.password &&
-         typeof req.session.authenticated == 'undefined' ||
-         !req?.session?.authenticated?.includes(domain)) return res.sendFile(__dirname + '/login.html');
-    
+    if(config.password !== undefined && req.body.password != config.password) return res.sendFile(__dirname + '/login.html');
+
     //Get file
     let file = req.url;
     if(file == '/') file = 'index.html';
@@ -115,7 +113,7 @@ app.post('*', (req, res) => {
     let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
     config = JSON.parse(config);
     
-    if(config.password && req.body.password != config.password) return res.sendFile(__dirname + '/login.html');
+    if(config.password !== undefined && req.body.password != config.password) return res.sendFile(__dirname + '/login.html');
     if(typeof req.session.authenticated == 'undefined') req.session.authenticated = [];
     req.session.authenticated.push(domain);
     //redirect to same url with get
