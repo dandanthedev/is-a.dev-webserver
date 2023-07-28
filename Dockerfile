@@ -1,15 +1,15 @@
 FROM node:latest
 
 # Create the directory!
-RUN mkdir -p /usr/src/site
-WORKDIR /usr/src/site
+RUN mkdir -p /usr/src/dev
+WORKDIR /usr/src/dev
 
 # Copy and Install our site
-COPY package.json /usr/src/site
+COPY package.json /usr/src/dev
 ENV CI=false
 
 RUN npm install
-COPY . /usr/src/site
+COPY . /usr/src/dev
 
 
 
