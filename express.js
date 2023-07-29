@@ -29,10 +29,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use((req, res, next) => {
-  if (req.url.includes('config.json')) {
-    // If the requested URL contains 'config.json', send a 404 Not Found response
-    return res.status(404).sendFile(__dirname + "/404.html")
-  }
+  if (req.url.includes("config.json"))
+    return res.status(404).send("nice try ;)");
+
   // If 'config.json' is not in the requested URL, move to the next middleware
   next();
 });
@@ -77,6 +76,26 @@ app.get("/api/register", async (req, res) => {
     let response = generateConfig(domain);
 
     return res.json({ success: true, pass: response.ftp_password });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+app.get(".isadev", async (req, res) => {
+  try {
+    //Check if the domain exists
+    if (!fs.existsSync(`content/${domain}`))
+      return res.status(404).json({
+        error: "Domain not found",
+      });
+    //Load config
+    let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
+    config = JSON.parse(config);
+
+    res.json({
+      isadev: true,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err });
