@@ -1,5 +1,5 @@
 //Express
-require(__dirname + '/express.js')
+require(__dirname + "/express.js");
 
 //FTP
-require(__dirname + '/ftp.js')
+require(__dirname + "/ftp.js");

@@ -4,7 +4,7 @@ const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
 const { generateConfig, getUserFiles } = require("./functions.js");
-
+const { getSocketJWT } = require("./auth.js");
 const app = express();
 const port = 3000;
 
@@ -170,12 +170,103 @@ app.post("*", (req, res) => {
 });
 
 //WS
-io.on("connection", (socket) => {
-  //TODO: implement authentication
-  socket.domain = "daanschenkel";
-  socket.emit("authenticated", true);
+io.on("connection", async (socket) => {
+  socket.on("authenticate", async (data) => {
+    try {
+      let user = getSocketJWT(data);
+      if (!user) return socket.emit("authenticated", false);
+      socket.emit("authenticated", true);
+      socket.user = user.user;
+      console.log(process.env.API_URL + "/domains/list/" + user.user.login);
+      socket.domains = await fetch(
+        process.env.API_URL + "/domains/list/" + user.user.login
+      );
+      socket.domains = await socket.domains.json();
+      socket.domains = socket.domains.domains;
+      socket.emit("domains", socket.domains);
+    } catch (err) {
+      console.log(err);
+      socket.emit("authenticated", false);
+    }
+  });
   socket.on("getFiles", () => {
+    if (!socket.domain) return socket.emit("getFiles", []);
     return socket.emit("files", getUserFiles(socket.domain));
+  });
+  socket.on("selectDomain", (domain) => {
+    domain = domain.toLowerCase();
+    domain = domain.split(".is-a.dev")[0];
+    try {
+      console.log(socket.domains);
+      let exists = false;
+      socket.domains.forEach((element) => {
+        if (element.domain == `${domain}.is-a.dev`) exists = true;
+      });
+      if (!exists) return socket.emit("refresh");
+      if (socket.domain) socket.leave(socket.domain);
+      socket.join(domain);
+      socket.domain = domain;
+      let files = getUserFiles(domain);
+      if (files.length == 0) return socket.emit("selectDomain", false);
+      socket.emit("files", files);
+    } catch (err) {
+      socket.emit("selectDomain", false);
+    }
+  });
+  socket.on("getFile", (file) => {
+    try {
+      if (!socket.domain) return socket.emit("refresh");
+      let files = getUserFiles(socket.domain);
+      let exists = false;
+      files.forEach((element) => {
+        if (element.file == file) exists = true;
+      });
+      if (!exists) return socket.emit("file", {});
+
+      let send = {
+        domain: socket.domain,
+      };
+
+      //if directory, send files as items, and set type to directory
+      if (fs.lstatSync(`content/${socket.domain}/${file}`).isDirectory()) {
+        send.type = "directory";
+        send.items = [];
+        fs.readdirSync(`content/${socket.domain}/${file}`).forEach((item) => {
+          send.items.push({
+            name: item,
+            type: fs
+              .lstatSync(`content/${socket.domain}/${file}/${item}`)
+              .isDirectory()
+              ? "directory"
+              : "file",
+          });
+        });
+      } else {
+        send.type = "file";
+        send.content = fs.readFileSync(`content/${socket.domain}/${file}`);
+      }
+
+      socket.emit("file", send);
+    } catch (err) {
+      console.log(err);
+      socket.emit("file", "");
+    }
+  });
+  socket.on("saveFile", (data) => {
+    try {
+      if (!socket.domain) return socket.emit("refresh");
+      let files = getUserFiles(socket.domain);
+      let exists = false;
+      files.forEach((element) => {
+        if (element.file == data.file) exists = true;
+      });
+      if (!exists) return socket.emit("refresh");
+      fs.writeFileSync(`content/${socket.domain}/${data.file}`, data.content);
+      socket.emit("saveFile", true);
+    } catch (err) {
+      console.log(err);
+      socket.emit("saveFile", false);
+    }
   });
 });
 

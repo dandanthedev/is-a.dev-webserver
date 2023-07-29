@@ -14,24 +14,41 @@ function generateConfig(domain) {
 
   return config;
 }
-function getUserFiles(domain) {
-  //return all files in the user's directory and subdirectories in an array
+
+function fetchDir(dir) {
   let files = [];
-  let dir = `content/${domain}`;
   let dirFiles = fs.readdirSync(dir);
   for (let file of dirFiles) {
-    if (fs.lstatSync(`${dir}/${file}`).isDirectory())
+    let stats = fs.statSync(`${dir}/${file}`);
+    if (stats.isDirectory()) {
       files.push({
-        file,
-        type: "folder",
+        file: `${file}`,
+        type: "directory",
+        path: dir.replace(`content/${dir.split("/")[1]}`, ""),
       });
-    else
+      let subFiles = fetchDir(`${dir}/${file}`);
+      subFiles.forEach((element) => {
+        files.push(element);
+      });
+    } else {
       files.push({
-        file,
+        file: `${file}`,
         type: "file",
+        path: dir.replace(`content/${dir.split("/")[1]}`, ""),
       });
+    }
   }
   return files;
+}
+
+function getUserFiles(domain) {
+  try {
+    //recursively get all files and make them an array with {file, type}
+    let files = fetchDir(`content/${domain}`);
+    return files;
+  } catch (err) {
+    return [];
+  }
 }
 
 module.exports = { generateConfig, getUserFiles };
