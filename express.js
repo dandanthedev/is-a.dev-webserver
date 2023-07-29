@@ -31,7 +31,7 @@ app.use(express.json());
 app.use((req, res, next) => {
   if (req.url.includes('config.json')) {
     // If the requested URL contains 'config.json', send a 404 Not Found response
-    return res.status(404).end();
+    return res.status(404).sendFile(__dirname + "/404.html")
   }
   // If 'config.json' is not in the requested URL, move to the next middleware
   next();
