@@ -2,4 +2,4 @@
 require(__dirname + "/express.js");
 
 //FTP
-require(__dirname + "/ftp.js");
+//require(__dirname + "/ftp.js");
