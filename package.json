@@ -18,6 +18,7 @@
     "ftp-srv": "^4.6.2",
     "jsonwebtoken": "^9.0.1",
     "nodemon": "^3.0.1",
+    "smtp-server": "^3.12.0",
     "socket.io": "^4.7.1"
   }
 }
