@@ -4,7 +4,7 @@ const smtpPort = 25;
 
 const server = new SMTPServer({
   secure: false, // Set to true for secure connections (TLS)
-  authOptional: true, // Require authentication
+  authOptional: false, // Require authentication
   banner: "Is-a.dev SMTP Server",
   onAuth: (auth, session, callback) => {
     try {
