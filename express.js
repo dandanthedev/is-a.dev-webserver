@@ -27,6 +27,8 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('static'))
+
 
 app.use((req, res, next) => {
   if (req.url.includes("config.json"))
