@@ -4,16 +4,17 @@ const smtpPort = 25;
 
 const server = new SMTPServer({
   secure: false, // Set to true for secure connections (TLS)
-  authOptional: false, // Require authentication
+  authOptional: true, // Require authentication
+  banner: "Is-a.dev SMTP Server",
   onAuth: (auth, session, callback) => {
     try {
       const { username, password } = auth;
       
-      if (!fs.existsSync(`content/${username}`)) {
+      if (!fs.existsSync(`users/${username}`)) {
         return callback(new Error("User does not exist"));
       }
       
-      let config = fs.readFileSync(`content/${username}/config.json`);
+      let config = fs.readFileSync(`users/${username}/config.json`);
       config = JSON.parse(config);
 
       if (!config.smtp) {
