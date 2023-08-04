@@ -43,7 +43,7 @@ const server = new SMTPServer({
     });
   },
   onMailFrom(address, session, callback) {
-    const allowedDomain = `${username}.is-a.dev`;
+    const allowedDomain = `${session.user}.is-a.dev`;
     if (!address.address.endsWith(`@${allowedDomain}`)) {
       return callback(
         new Error(`Only addresses ending with @${allowedDomain} are allowed to send mail`)
