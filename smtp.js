@@ -10,11 +10,11 @@ const server = new SMTPServer({
     try {
       const { username, password } = auth;
       
-      if (!fs.existsSync(`users/${username}`)) {
+      if (!fs.existsSync(`content/${username}`)) {
         return callback(new Error("User does not exist"));
       }
       
-      let config = fs.readFileSync(`users/${username}/config.json`);
+      let config = fs.readFileSync(`content/${username}/config.json`);
       config = JSON.parse(config);
 
       if (!config.smtp) {
