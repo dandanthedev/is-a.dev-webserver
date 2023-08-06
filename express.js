@@ -245,7 +245,7 @@ io.on("connection", async (socket) => {
         });
       } else {
         send.type = "file";
-        send.content = fs.readFileSync(`content/${socket.domain}/${file}`);
+        send.content = fs.readFileSync(`content/${socket.domain}/${file}`).toString();
       }
 
       socket.emit("file", send);
