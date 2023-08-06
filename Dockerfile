@@ -24,4 +24,4 @@ COPY . /usr/src/dev
 #    && rm -rf /var/lib/apt/lists/*
 
 # Start me!
-CMD ["npm", "."]
+CMD ["./entrypoint.sh"]
