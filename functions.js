@@ -7,6 +7,10 @@ function generateConfig(domain) {
     ftp_password:
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15),
+    smtp: false,
+    smtp_password:
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15),
   };
   fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
   //make the config file writable, but not deletable
