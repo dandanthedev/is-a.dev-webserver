@@ -176,7 +176,7 @@ app.get("*", async (req, res) => {
     }
 
     //Serve file
-    if (file.endsWith(".php")) return res.render(file);
+    if (file.endsWith(".php")) return res.render(__dirname + "/" + path);
     return res.sendFile(__dirname + "/" + path);
   } catch (err) {
     console.log(err);
