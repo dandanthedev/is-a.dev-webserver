@@ -8,6 +8,10 @@ const { getSocketJWT } = require("./auth.js");
 const app = express();
 const port = 3000;
 
+const phpExpress = require('php-express')({
+  binPath: 'php'
+});
+
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
@@ -25,6 +29,7 @@ app.use(
     cookie: { secure: false },
   })
 );
+app.engine('php', phpExpress.engine);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -171,6 +176,7 @@ app.get("*", async (req, res) => {
     }
 
     //Serve file
+    if (file.endsWith(".php")) return res.render(file);
     return res.sendFile(__dirname + "/" + path);
   } catch (err) {
     console.log(err);

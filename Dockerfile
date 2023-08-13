@@ -13,15 +13,9 @@ ENV CI=false
 RUN npm install
 COPY . /usr/src/dev
 
-
-
-
-# For Debugging
-#RUN apt-get update && apt-get install -y \
-#    nano \
-#    curl \
-#    git \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    php \
+    && rm -rf /var/lib/apt/lists/*
 
 # Start me!
 CMD ["./entrypoint.sh"]
