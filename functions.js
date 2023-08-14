@@ -1,9 +1,8 @@
 const fs = require("fs");
 const chmod = require("chmod");
 
-function generateConfig(domain, preregister) {
+function generateConfigWithActivation(domain) {
   let config = {};
-  if (preregister) {
     config = {
       activation_code: 
         Math.random().toString(36).substring(2, 15) +
@@ -17,8 +16,17 @@ function generateConfig(domain, preregister) {
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15),
     };
-  }
-  else {
+  
+  
+  fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
+  //make the config file writable, but not deletable
+  chmod(`content/${domain}/config.json`, 644);
+
+  return config;
+}
+
+function generateConfig(domain) {
+  let config = {};
     config = {
       ftp: true,
       ftp_password:
@@ -29,13 +37,29 @@ function generateConfig(domain, preregister) {
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15),
     };
-  }
+  
   
   fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
   //make the config file writable, but not deletable
   chmod(`content/${domain}/config.json`, 644);
 
   return config;
+}
+
+function activateDomain(domain, activation_code) {
+  fs.readFileSync(`content/${domain}/config.json`, (err, data) => {
+    if (err) throw err;
+    let config = JSON.parse(data);
+    if (config.activation_code == activation_code) {
+      // remove activation code
+      delete config.activation_code;
+      // write config file
+      fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
+      return true;
+    } else {
+      return false;
+    }
+  });
 }
 
 function fetchDir(dir) {
@@ -74,4 +98,4 @@ function getUserFiles(domain) {
   }
 }
 
-module.exports = { generateConfig, getUserFiles };
+module.exports = { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain };

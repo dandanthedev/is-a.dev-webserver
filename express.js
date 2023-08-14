@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
-const { generateConfig, getUserFiles } = require("./functions.js");
+const { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain } = require("./functions.js");
 const { getSocketJWT } = require("./auth.js");
 const app = express();
 const port = 3000;
@@ -80,6 +80,20 @@ app.get("/api/domain", async (req, res) => {
   }
 });
 
+app.get("/api/activate", async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let activation_code = req.query.activation_code;
+    let activate = activateDomain(domain, activation_code);
+    if (activate) return res.json({ success: true });
+    else return res.json({ success: false });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+
 app.get("/api/preregister", async (req, res) => {
   try {
     let domain = req.query.domain;
@@ -94,17 +108,17 @@ app.get("/api/preregister", async (req, res) => {
 
     if (data.info) {
       //check if directory content/host exists
-    if (fs.existsSync(`content/${domain}`))
-    return res.status(400).json({ error: "Domain already exists" });
+      if (fs.existsSync(`content/${domain}`))
+      return res.status(400).json({ error: "Domain already exists" });
 
-    //duplicate skeleton
-    fs.mkdirSync(`content/${domain}`);
-    let files = fs.readdirSync("skeleton");
-    for (let file of files) {
-      fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
-    }
-    let response = generateConfig(domain, "true");
-    return res.json({ success: true });
+      //duplicate skeleton
+      fs.mkdirSync(`content/${domain}`);
+      let files = fs.readdirSync("skeleton");
+      for (let file of files) {
+        fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
+      }
+      let response = generateConfigWithActivation(domain);
+      return res.json({ success: true });
     }
     if (data.owner?.username != user.user.login)
       return res
@@ -145,7 +159,7 @@ app.get("/api/register", async (req, res) => {
     for (let file of files) {
       fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
     }
-    let response = generateConfig(domain, "false");
+    let response = generateConfig(domain);
 
     return res.json({ success: true, pass: response.ftp_password });
   } catch (err) {
