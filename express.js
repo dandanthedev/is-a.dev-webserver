@@ -80,6 +80,42 @@ app.get("/api/domain", async (req, res) => {
   }
 });
 
+app.get("/api/preregister", async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+    let user = getJWT(jwt);
+    if (!user) return res.status(403).send("Invalid JWT");
+
+    let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+    data = await data.json();
+
+    if (data.error) return res.status(500).send(data.error);
+
+    if (data.info) {
+      //check if directory content/host exists
+    if (fs.existsSync(`content/${domain}`))
+    return res.status(400).json({ error: "Domain already exists" });
+
+    //duplicate skeleton
+    fs.mkdirSync(`content/${domain}`);
+    let files = fs.readdirSync("skeleton");
+    for (let file of files) {
+      fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
+    }
+    let response = generateConfig(domain, "true");
+    return res.json({ success: true });
+    }
+    if (data.owner?.username != user.user.login)
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this domain" });    
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
 
 
 app.get("/api/register", async (req, res) => {
@@ -109,7 +145,7 @@ app.get("/api/register", async (req, res) => {
     for (let file of files) {
       fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
     }
-    let response = generateConfig(domain);
+    let response = generateConfig(domain, "false");
 
     return res.json({ success: true, pass: response.ftp_password });
   } catch (err) {
@@ -159,7 +195,7 @@ app.get("*", async (req, res) => {
 
     if (config.activation_code !== undefined)
       return res.sendFile(__dirname + "/activation.html");
-    
+
 
     //Get file
     let file = req.url;

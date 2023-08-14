@@ -1,17 +1,36 @@
 const fs = require("fs");
 const chmod = require("chmod");
 
-function generateConfig(domain) {
-  let config = {
-    ftp: true,
-    ftp_password:
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15),
-    smtp: false,
-    smtp_password:
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15),
-  };
+function generateConfig(domain, preregister) {
+  let config = {};
+  if (preregister) {
+    config = {
+      activation_code: 
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15),
+      ftp: true,
+      ftp_password:
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15),
+      smtp: false,
+      smtp_password:
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15),
+    };
+  }
+  else {
+    config = {
+      ftp: true,
+      ftp_password:
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15),
+      smtp: false,
+      smtp_password:
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15),
+    };
+  }
+  
   fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
   //make the config file writable, but not deletable
   chmod(`content/${domain}/config.json`, 644);
