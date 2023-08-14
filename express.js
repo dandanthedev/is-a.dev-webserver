@@ -93,11 +93,11 @@ app.get("/api/register", async (req, res) => {
     let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
     data = await data.json();
 
-    //if (data.error) return res.status(500).send(data.error);
-    //if (data.owner?.username != user.user.login)
-      //return res
-        //.status(403)
-        //.json({ error: "You are not the owner of this domain" });
+    if (data.error) return res.status(500).send(data.error);
+    if (data.owner?.username != user.user.login)
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this domain" });
 
     //check if directory content/host exists
     if (fs.existsSync(`content/${domain}`))
@@ -156,6 +156,10 @@ app.get("*", async (req, res) => {
     //Password protection
     if (config.password !== undefined && req.body.password != config.password)
       return res.sendFile(__dirname + "/login.html");
+
+    if (config.activation_code !== undefined)
+      return res.sendFile(__dirname + "/activation.html");
+    
 
     //Get file
     let file = req.url;
