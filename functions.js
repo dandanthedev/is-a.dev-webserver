@@ -6,15 +6,7 @@ function generateConfigWithActivation(domain) {
     config = {
       activation_code: 
         Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15),
-      ftp: true,
-      ftp_password:
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15),
-      smtp: false,
-      smtp_password:
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15),
+        Math.random().toString(36).substring(2, 15)
     };
   
   
@@ -52,9 +44,7 @@ function activateDomain(domain, activation_code) {
     let config = JSON.parse(data);
     if (config.activation_code == activation_code) {
       // remove activation code
-      delete config.activation_code;
-      // write config file
-      fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
+      generateConfig(domain);
       return true;
     } else {
       return false;
