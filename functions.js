@@ -42,6 +42,7 @@ function activateDomain(domain, activation_code) {
   fs.readFileSync(`content/${domain}/config.json`, (err, data) => {
     if (err) throw err;
     let config = JSON.parse(data);
+    console.log(config.activation_code);
     if (config.activation_code == activation_code) {
       // remove activation code
       generateConfig(domain);
