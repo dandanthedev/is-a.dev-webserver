@@ -109,6 +109,7 @@ app.get("/api/preregister", async (req, res) => {
 
     let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
     data = await data.json();
+    let email = user.emails.find((email) => email.primary)
 
     if (data.error) return res.status(500).send(data.error);
 
@@ -123,7 +124,7 @@ app.get("/api/preregister", async (req, res) => {
       for (let file of files) {
         fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
       }
-      let response = generateConfigWithActivation(domain);
+      let response = generateConfigWithActivation(domain, email.email);
       return res.json({ success: true });
     }
     if (data.owner?.username != user.user.login)

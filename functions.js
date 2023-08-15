@@ -4,12 +4,13 @@ require("dotenv").config();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-function generateConfigWithActivation(domain) {
+function generateConfigWithActivation(domain, email) {
   let config = {};
     config = {
       activation_code: 
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15),
+      activation_email: email,
       ftp: true,
       ftp_password:
         Math.random().toString(36).substring(2, 15) +
@@ -57,6 +58,7 @@ function activateDomain(domain, activation_code, callback) {
       // Handle the error appropriately, e.g., by passing it to the callback.
       return callback(err);
     }
+    let useremail = '';
 
     try {
       let config = JSON.parse(data);
@@ -64,7 +66,9 @@ function activateDomain(domain, activation_code, callback) {
       
       if (config.activation_code === activation_code) {
         // Remove activation code
+        useremail = config.activation_email;
         delete config.activation_code;
+        delete config.activation_email;
 
 
         // Write updated config file
@@ -73,7 +77,7 @@ function activateDomain(domain, activation_code, callback) {
             return callback(writeErr);
           }
           const msg = {
-            to: email,
+            to: useremail,
             from: 'hosting@maintainers.is-a.dev', // This email should be verified in your SendGrid settings
             templateId: 'd-694e5d1edfca4cbca4958fb4fb4516f3', // Replace with your actual dynamic template ID
             dynamic_template_data: {
