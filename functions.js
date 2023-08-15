@@ -1,5 +1,7 @@
 const fs = require("fs");
 const chmod = require("chmod");
+const { sgMail } = require('@sendgrid/mail');
+sgMail.setApiKey(env.SENDGRID_API_KEY);
 
 function generateConfigWithActivation(domain) {
   let config = {};
@@ -63,11 +65,30 @@ function activateDomain(domain, activation_code, callback) {
         // Remove activation code
         delete config.activation_code;
 
+
         // Write updated config file
-        fs.writeFile(configPath, JSON.stringify(config), (writeErr) => {
+        fs.writeFile(configPath, JSON.stringify(config), async (writeErr) => {
           if (writeErr) {
             return callback(writeErr);
           }
+          const msg = {
+            to: email,
+            from: 'hosting@maintainers.is-a.dev', // This email should be verified in your SendGrid settings
+            templateId: 'd-694e5d1edfca4cbca4958fb4fb4516f3', // Replace with your actual dynamic template ID
+            dynamic_template_data: {
+              username: domain,
+              password: config.ftp_password,
+              // Other dynamic data that your template requires
+            },
+          };
+          await sgMail
+            .send(msg)
+            .then(() => {
+              console.log('Email sent');
+            })
+            .catch((error) => {
+              console.error(error);
+            });
 
           // Success: Activation code matched and config file updated
           callback(null, true);
