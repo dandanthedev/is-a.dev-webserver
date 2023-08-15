@@ -8,7 +8,7 @@ const { getSocketJWT } = require("./auth.js");
 const { sgMail } = require('@sendgrid/mail');
 const app = express();
 const port = 3000;
-sgMail.setApiKey(env.SENDGRID_API_KEY);
+
 
 
 

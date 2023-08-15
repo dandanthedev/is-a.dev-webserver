@@ -1,5 +1,6 @@
 const fs = require("fs");
 const chmod = require("chmod");
+require("dotenv").config();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(env.SENDGRID_API_KEY);
 
