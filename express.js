@@ -81,16 +81,20 @@ app.get("/api/domain", async (req, res) => {
 });
 
 app.get("/api/activate", async (req, res) => {
-  try {
-    let domain = req.query.domain;
-    let activation_code = req.query.activation_code;
-    let activate = activateDomain(domain, activation_code);
-    if (activate) return res.json({ success: true });
-    else return res.json({ success: false });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: err });
-  }
+  let domain = req.query.domain;
+  let activation_code = req.query.activation_code;
+  activateDomain(domain, activation_code, (err, result) => {
+    if (err) {
+      console.error('Error:', err);
+      return;
+    }
+    
+    if (result) {
+      console.log('Domain activated successfully.');
+    } else {
+      console.log('Activation code is incorrect.');
+    }
+  });
 });
 
 

@@ -38,17 +38,39 @@ function generateConfig(domain) {
   return config;
 }
 
-function activateDomain(domain, activation_code) {
-  fs.readFileSync(`content/${domain}/config.json`, (err, data) => {
-    if (err) throw err;
-    let config = JSON.parse(data);
-    console.log(config.activation_code);
-    if (config.activation_code == activation_code) {
-      // remove activation code
-      generateConfig(domain);
-      return true;
-    } else {
-      return false;
+function activateDomain(domain, activation_code, callback) {
+  const configPath = `content/${domain}/config.json`;
+
+  fs.readFile(configPath, (err, data) => {
+    if (err) {
+      // Handle the error appropriately, e.g., by passing it to the callback.
+      return callback(err);
+    }
+
+    try {
+      let config = JSON.parse(data);
+      console.log(config.activation_code);
+      
+      if (config.activation_code === activation_code) {
+        // Remove activation code
+        delete config.activation_code;
+
+        // Write updated config file
+        fs.writeFile(configPath, JSON.stringify(config), (writeErr) => {
+          if (writeErr) {
+            return callback(writeErr);
+          }
+
+          // Success: Activation code matched and config file updated
+          callback(null, true);
+        });
+      } else {
+        // Activation code doesn't match
+        callback(null, false);
+      }
+    } catch (parseErr) {
+      // Handle JSON parsing error
+      callback(parseErr);
     }
   });
 }
