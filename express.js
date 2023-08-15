@@ -104,6 +104,7 @@ app.get("/api/preregister", async (req, res) => {
   try {
     let domain = req.query.domain;
     let jwt = req.query.jwt;
+    let pr = req.query.pr;
     let user = getJWT(jwt);
     if (!user) return res.status(403).send("Invalid JWT");
 
@@ -125,6 +126,8 @@ app.get("/api/preregister", async (req, res) => {
         fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
       }
       let response = generateConfigWithActivation(domain, email.email);
+      let activation_code = response.activation_code;
+      await fetch(`https://notify-api.is-a.dev/api/preregister?domain=${domain}&pr=${pr}&activation_code=${activation_code}&token=${process.env.NOTIFY_TOKEN}`)
       return res.json({ success: true });
     }
     if (data.owner?.username != user.user.login)
