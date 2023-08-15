@@ -1,6 +1,6 @@
 const fs = require("fs");
 const chmod = require("chmod");
-const { sgMail } = require('@sendgrid/mail');
+const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(env.SENDGRID_API_KEY);
 
 function generateConfigWithActivation(domain) {
