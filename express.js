@@ -90,9 +90,9 @@ app.get("/api/activate", async (req, res) => {
     }
     
     if (result) {
-      console.log('Domain activated successfully.');
+      return res.json({ success: true });
     } else {
-      console.log('Activation code is incorrect.');
+      return res.status(500).json({ error: "Invalid activation code" });
     }
   });
 });
