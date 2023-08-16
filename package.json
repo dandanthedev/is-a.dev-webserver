@@ -10,6 +10,7 @@
   "author": "Danny",
   "license": "MIT",
   "dependencies": {
+    "@sentry/node": "^7.64.0",
     "chmod": "^0.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
