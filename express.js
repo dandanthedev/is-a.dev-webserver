@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+const Sentry = require("@sentry/node");
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
@@ -7,6 +7,26 @@ const { generateConfig, getUserFiles, generateConfigWithActivation, activateDoma
 const { getSocketJWT } = require("./auth.js");
 const { sgMail } = require('@sendgrid/mail');
 const app = express();
+Sentry.init({
+  dsn: "https://244a1ad4b427c80530cffbebc2c7b3a4@o4505716264599552.ingest.sentry.io/4505716341800960",
+  integrations: [
+    // enable HTTP calls tracing
+    new Sentry.Integrations.Http({
+      tracing: true
+    }),
+    // enable Express.js middleware tracing
+    new Sentry.Integrations.Express({
+      app
+    }),
+  ],
+  // Performance Monitoring
+  tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!,
+});
+
+// Trace incoming requests
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
 const port = 3000;
 
 
@@ -198,6 +218,10 @@ app.get(".isadev", async (req, res) => {
   }
 });
 
+app.get("/debug-sentry", function mainHandler(req, res) {
+  throw new Error("My first Sentry error!");
+});
+
 app.get("*", async (req, res) => {
   try {
     //Domain variable
@@ -244,6 +268,9 @@ app.get("*", async (req, res) => {
     return res.status(500).sendFile(__dirname + "/500.html");
   }
 });
+
+
+
 app.post("*", (req, res) => {
   try {
     let domain = req.headers.host;
@@ -268,6 +295,8 @@ app.post("*", (req, res) => {
     return res.status(500).sendFile(__dirname + "/500.html");
   }
 });
+// The error handler must be registered before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
 
 //WS
 io.on("connection", async (socket) => {
