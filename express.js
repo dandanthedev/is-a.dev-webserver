@@ -224,50 +224,37 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 
 app.get("*", async (req, res) => {
   try {
-    //Domain variable
-    let domain = req.headers.host;
-    domain = domain.split(":")[0];
-    domain = domain.split(".is-a.dev")[0];
-
-    //Check if the domain exists
-    if (!fs.existsSync(`content/${domain}`))
-      return res.status(404).sendFile(__dirname + "/404.html");
-
-    //Load config
-    let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
-    config = JSON.parse(config);
-
-    //Password protection
-    if (config.password !== undefined && req.body.password != config.password)
-      return res.sendFile(__dirname + "/login.html");
-
-    if (config.activation_code !== undefined)
-      return res.sendFile(__dirname + "/activation.html");
-
-
-    //Get file
+    // Extract domain
+    let domain = req.headers.host.split(":")[0].split(".is-a.dev")[0];
+    // Extract requested file path
     let file = req.url;
-    if (file == "/") file = "index.html";
-    if (file.includes(".."))
-      return res.status(403).sendFile(__dirname + "/403.html");
+    if (file === "/") file = "index.html";
     if (file.startsWith("/")) file = file.substring(1);
+    // Construct full file path
+    let filePath = `content/${domain}/${file}`;
 
-    //Check if file exists
-    let path = `content/${domain}/${file}`;
-    if (!fs.existsSync(path)) {
-      //if custom 404 exists, send it, else send default
-      if (fs.existsSync(`${domain}/404.html`))
-        return res.status(404).sendFile(`${domain}/404.html`);
+    // Check if the domain directory exists
+    if (!fs.existsSync(`content/${domain}`)) {
       return res.status(404).sendFile(__dirname + "/404.html");
     }
 
-    //Serve file
-    return res.sendFile(__dirname + "/" + path);
+    // Check if the requested file exists
+    if (!fs.existsSync(filePath)) {
+      // Check for custom 404 page in the domain directory
+      if (fs.existsSync(`content/${domain}/404.html`)) {
+        return res.status(404).sendFile(`content/${domain}/404.html`);
+      }
+      return res.status(404).sendFile(__dirname + "/404.html");
+    }
+
+    // Serve the requested file
+    return res.sendFile(filePath);
   } catch (err) {
     console.log(err);
     return res.status(500).sendFile(__dirname + "/500.html");
   }
 });
+
 
 
 
