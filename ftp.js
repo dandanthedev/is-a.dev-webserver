@@ -4,6 +4,7 @@ const port = 21;
 const ftpServer = new FtpSrv({
   url: "ftp://0.0.0.0:" + port,
   anonymous: false,
+  pasv_url: '217.174.245.249',
 });
 const { generateConfig } = require("./functions.js");
 
