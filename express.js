@@ -254,6 +254,8 @@ app.get("*", async (req, res) => {
 
     //Check if file exists
     let path = `content/${domain}/${file}`;
+    // if path is a directory, add index.html
+    if (fs.lstatSync(path).isDirectory()) path += "/index.html";
     if (!fs.existsSync(path)) {
       //if custom 404 exists, send it, else send default
       if (fs.existsSync(`${domain}/404.html`))
