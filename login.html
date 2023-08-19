@@ -21,6 +21,7 @@
     <script>
       function signIn() {
         //send POST request to this url
+        event.preventDefault();
         let form = document.createElement("form");
         form.method = "POST";
         form.action = "";

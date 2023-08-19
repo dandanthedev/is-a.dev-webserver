@@ -236,9 +236,14 @@ app.get("*", async (req, res) => {
     //Load config
     let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
     config = JSON.parse(config);
+    let file = req.url;
 
     //Password protection
     if (config.password !== undefined && req.body.password != config.password)
+      return res.sendFile(__dirname + "/login.html");
+
+    // if congig.protected_route matches file the send login.html
+    if (config.protected_route !== undefined && file == config.protected_route && req.body.password != config.route_password)
       return res.sendFile(__dirname + "/login.html");
 
     if (config.activation_code !== undefined)
@@ -246,7 +251,6 @@ app.get("*", async (req, res) => {
 
 
     //Get file
-    let file = req.url;
     if (file == "/") file = "index.html";
     if (file.includes(".."))
       return res.status(403).sendFile(__dirname + "/403.html");
