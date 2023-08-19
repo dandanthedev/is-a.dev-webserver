@@ -239,7 +239,7 @@ app.get("*", async (req, res) => {
     let file = req.url;
 
     //Password protection
-    if (config.password !== undefined && req.body.password != config.password)
+    if (config.password !== undefined && req.query.password != config.password)
       return res.sendFile(__dirname + "/login.html");
 
     // if congig.protected_route matches file the send login.html
