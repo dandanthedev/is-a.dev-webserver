@@ -245,7 +245,7 @@ app.get("*", async (req, res) => {
       return res.sendFile(__dirname + "/login.html");
 
     // if congig.protected_route matches file the send login.html
-    if (config.protected_route !== undefined && file == config.protected_route && req.body.password != config.route_password)
+    if (config.protected_route !== undefined && file == config.protected_route && req.query.password != config.route_password)
       return res.sendFile(__dirname + "/login.html");
 
     if (config.activation_code !== undefined)
