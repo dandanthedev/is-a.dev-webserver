@@ -237,6 +237,8 @@ app.get("*", async (req, res) => {
     let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
     config = JSON.parse(config);
     let file = req.url;
+    // remove query string
+    if (file.includes("?")) file = file.split("?")[0];
 
     //Password protection
     if (config.password !== undefined && req.query.password != config.password)
