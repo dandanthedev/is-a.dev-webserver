@@ -253,7 +253,6 @@ app.get("*", async (req, res) => {
 
 
     //Get file
-    if (file == "/") file = "index.html";
     if (file.includes(".."))
       return res.status(403).sendFile(__dirname + "/403.html");
     if (file.startsWith("/")) file = file.substring(1);
