@@ -88,11 +88,14 @@ app.get('/api/download', async (req, res) => {
   // check if user is owner of the domain
   let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
   data = await data.json();
-  const config = JSON.parse(data);
-  if (config.owner?.username != user.user.login)
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username != user.user.login)
     return res
       .status(403)
       .json({ error: "You are not the owner of this domain" });
+
+  if (!fs.existsSync(`content/${domain}`))
+    return res.status(404).json({ error: "Domain dosnt' exist" });
       
   const folderToZip = path.join(__dirname, `/content/${domain}/`);
   const zipFileName = `${domain}.zip`;
