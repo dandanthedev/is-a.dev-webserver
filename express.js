@@ -103,7 +103,11 @@ app.get("/api/download", async (req, res) => {
     }
     let data2 = zip.generate({ base64: false, compression: "DEFLATE" });
 
-    return res.send(data2);
+    // return dowload
+    res.set("Content-Type", "application/zip");
+    res.set("Content-Disposition", `attachment; filename=${domain}.zip`);
+    res.set("Content-Length", data2.length);
+    res.send(data2);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err });
