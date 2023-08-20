@@ -2,6 +2,7 @@ require("dotenv").config();
 const Sentry = require("@sentry/node");
 const express = require("express");
 const session = require("express-session");
+const path = require('path');
 const cors = require("cors");
 const archiver = require('archiver');
 const { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain } = require("./functions.js");

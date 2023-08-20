@@ -21,6 +21,7 @@
     "ftp-srv": "^4.6.2",
     "jsonwebtoken": "^9.0.1",
     "nodemon": "^3.0.1",
+    "path": "^0.12.7",
     "php-express": "^0.0.3",
     "smtp-server": "^3.12.0",
     "socket.io": "^4.7.1"
