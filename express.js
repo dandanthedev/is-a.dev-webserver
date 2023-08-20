@@ -76,6 +76,38 @@ const { getJWT } = require("./jwt");
 
 
 //api routes
+app.post("/api/upload", async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+    let user = getJWT(jwt);
+    if (!user) return res.status(403).send("Invalid JWT");
+
+    let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+    data = await data.json();
+
+    if (data.error) return res.status(500).send(data.error);
+    if (data.owner?.username != user.user.login)
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this domain" });
+
+    //check if directory content/host exists
+    if (!fs.existsSync(`content/${domain}`))
+      return res.status(404).json({ error: "Domain dosnt' exist" });
+
+    //check if file is in request
+    if (!req.files) return res.status(400).json({ error: "No file uploaded" });
+
+    // save file to disk
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+    
+
 app.get('/api/download', async (req, res) => {
   // get user input
   const domain = req.query.domain;
