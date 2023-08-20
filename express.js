@@ -3,6 +3,7 @@ const Sentry = require("@sentry/node");
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const archiver = require('archiver');
 const { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain } = require("./functions.js");
 const { getSocketJWT } = require("./auth.js");
 const { sgMail } = require('@sendgrid/mail');
@@ -97,12 +98,21 @@ app.get("/api/download", async (req, res) => {
     //duplicate skeleton
 
     let files = fs.readdirSync("content/" + domain);
-    let zip = new require("node-zip")();
+    // create a file to stream archive data to.
+    // if the file exists, then delete it and create a new file
+    if (fs.existsSync(__dirname + `/content/${domain}.zip`))
+      fs.unlinkSync(__dirname + `/content/${domain}.zip`);
+    let output = fs.createWriteStream(__dirname + "/content/" + domain + ".zip");
+    let archive = archiver("zip", {
+      zlib: { level: 9 }, // Sets the compression level.
+    });
+    archive.pipe(output);
     for (let file of files) {
-      zip.file(file, fs.readFileSync(`content/${domain}/${file}`));
+      archive.file(`content/${domain}/${file}`, { name: file });
     }
-    let data2 = zip.generate({ base64: false, compression: "DEFLATE" });
-
+    await archive.finalize();
+    let data2 = fs.readFileSync(__dirname + `/content/${domain}.zip`);
+    fs.unlinkSync(__dirname + `/content/${domain}.zip`);
     // return dowload
     res.set("Content-Type", "application/zip");
     res.set("Content-Disposition", `attachment; filename=${domain}.zip`);

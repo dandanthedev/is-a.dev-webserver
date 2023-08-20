@@ -12,6 +12,7 @@
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
     "@sentry/node": "^7.64.0",
+    "archiver": "^6.0.0",
     "chmod": "^0.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -19,7 +20,6 @@
     "express-session": "^1.17.3",
     "ftp-srv": "^4.6.2",
     "jsonwebtoken": "^9.0.1",
-    "node-zip": "^1.1.1",
     "nodemon": "^3.0.1",
     "php-express": "^0.0.3",
     "smtp-server": "^3.12.0",
