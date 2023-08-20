@@ -75,53 +75,50 @@ const { getJWT } = require("./jwt");
 
 
 //api routes
-app.get("/api/download", async (req, res) => {
-  try {
-    let domain = req.query.domain;
-    let jwt = req.query.jwt;
-    let user = getJWT(jwt);
-    if (!user) return res.status(403).send("Invalid JWT");
+app.get('/api/download', (req, res) => {
+  // get user input
+  const domain = req.query.domain;
+  const jwt = req.query.jwt;
 
-    let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
-    data = await data.json();
+  // check if user is authenticated
+  const user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
 
-    if (data.error) return res.status(500).send(data.error);
-    if (data.owner?.username != user.user.login)
-      return res
-        .status(403)
-        .json({ error: "You are not the owner of this domain" });
+  // check if user is owner of the domain
+  const data = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
+  const config = JSON.parse(data);
+  if (config.owner?.username != user.user.login)
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
+      
+  const folderToZip = path.join(__dirname, `/content/${domain}/`);
+  const zipFileName = `${domain}.zip`;
 
-    //check if directory content/host exists
-    if (!fs.existsSync(`content/${domain}`))
-      return res.status(404).json({ error: "Domain not found" });
+  // Create a writable stream for the zip file
+  const output = fs.createWriteStream(zipFileName);
 
-    //duplicate skeleton
+  // Create an archiver instance
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Set compression level
+  });
 
-    let files = fs.readdirSync("content/" + domain);
-    // create a file to stream archive data to.
-    // if the file exists, then delete it and create a new file
-    if (fs.existsSync(__dirname + `/content/${domain}.zip`))
-      fs.unlinkSync(__dirname + `/content/${domain}.zip`);
-    let output = fs.createWriteStream(__dirname + "/content/" + domain + ".zip");
-    let archive = archiver("zip", {
-      zlib: { level: 9 }, // Sets the compression level.
-    });
-    archive.pipe(output);
-    for (let file of files) {
-      archive.file(`content/${domain}/${file}`, { name: file });
-    }
-    await archive.finalize();
-    let data2 = fs.readFileSync(__dirname + `/content/${domain}.zip`);
-    fs.unlinkSync(__dirname + `/content/${domain}.zip`);
-    // return dowload
-    res.set("Content-Type", "application/zip");
-    res.set("Content-Disposition", `attachment; filename=${domain}.zip`);
-    res.set("Content-Length", data2.length);
-    res.send(data2);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: err });
-  }
+  // Pipe the output stream to the archive
+  archive.pipe(output);
+
+  // Append the entire folder to the archive
+  archive.directory(folderToZip, false);
+
+  // Finalize the archive
+  archive.finalize();
+
+  // Set response headers to indicate a downloadable file
+  res.attachment(zipFileName);
+
+  // Pipe the zip file to the response
+  output.on('close', () => {
+    res.status(200).sendFile(zipFileName, { root: __dirname });
+  });
 });
 
 
