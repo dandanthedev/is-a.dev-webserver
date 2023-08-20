@@ -76,7 +76,7 @@ const { getJWT } = require("./jwt");
 
 
 //api routes
-app.get('/api/download', (req, res) => {
+app.get('/api/download', async (req, res) => {
   // get user input
   const domain = req.query.domain;
   const jwt = req.query.jwt;
@@ -86,7 +86,8 @@ app.get('/api/download', (req, res) => {
   if (!user) return res.status(403).send("Invalid JWT");
 
   // check if user is owner of the domain
-  const data = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
   const config = JSON.parse(data);
   if (config.owner?.username != user.user.login)
     return res
