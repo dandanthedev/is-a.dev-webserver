@@ -64,7 +64,7 @@ app.use((req, res, next) => {
   next();
 });
 
-server.use(cors())
+app.use(cors())
 
 const fs = require("fs");
 const { getJWT } = require("./jwt");
