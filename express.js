@@ -189,9 +189,8 @@ app.get("/api/domain", async (req, res) => {
     if (!fs.existsSync(`content/${domain}`))
       return res.status(404).json({ error: "Domain dosnt' exist" });
     
-    let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
-    config = JSON.parse(config);
-    return res.json({ success: true, config: config });
+    
+    return res.json({ success: true });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err });
