@@ -55,39 +55,30 @@ async function generateConfig(domain) {
   return config;
 }
 
-function activateDomain(domain, activation_code, callback) {
-  const configPath = `content/${domain}/config.json`;
-
-  fs.readFile(configPath, (err, data) => {
-    if (err) {
-      // Handle the error appropriately, e.g., by passing it to the callback.
-      return callback(err);
-    }
+async function activateDomain(domain, activation_code, callback) {
+  const User = mongoose.model("hostingdata"); // Replace with your Mongoose model name
+  const user = await User.findOne({ domain }).exec();
     let useremail = '';
 
     try {
-      let config = JSON.parse(data);
+      let config = user;
       console.log(config.activation_code);
       
-      if (config.activation_code === activation_code) {
+      if (config.ACTIVATION_CODE === activation_code) {
         // Remove activation code
-        useremail = config.activation_email;
-        delete config.activation_code;
-        delete config.activation_email;
-
-
-        // Write updated config file
-        fs.writeFile(configPath, JSON.stringify(config), async (writeErr) => {
-          if (writeErr) {
-            return callback(writeErr);
-          }
+          useremail = config.ACTIVATION_EMAIL;
+          password = config.HashedPassword;
+          // hash password
+          const pas = await bcrypt.hash(password, 10);
+          await User.updateOne({ domain }, { $set: { ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined, HashedPassword: pas } });
+          
           const msg = {
             to: useremail,
             from: 'hosting@maintainers.is-a.dev', // This email should be verified in your SendGrid settings
             templateId: 'd-694e5d1edfca4cbca4958fb4fb4516f3', // Replace with your actual dynamic template ID
             dynamic_template_data: {
               username: domain,
-              password: config.ftp_password,
+              password: password,
               // Other dynamic data that your template requires
             },
           };
@@ -102,16 +93,12 @@ function activateDomain(domain, activation_code, callback) {
 
           // Success: Activation code matched and config file updated
           callback(null, true);
-        });
-      } else {
-        // Activation code doesn't match
-        callback(null, false);
-      }
-    } catch (parseErr) {
-      // Handle JSON parsing error
-      callback(parseErr);
+    };
+}
+    catch (err) {
+      // Error: Activation code did not match
+      callback(err, false);
     }
-  });
 }
 
 function fetchDir(dir) {
