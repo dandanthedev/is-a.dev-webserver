@@ -12,7 +12,7 @@ const dbName = process.env.DATABASE_NAME || 'your_database_name';
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-mongoose.connect(uri + "/hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(uri + "hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function processConfigFiles(directoryPath) {
   try {
