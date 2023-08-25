@@ -241,7 +241,7 @@ app.get("/api/preregister", async (req, res) => {
         fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
       }
       let response = generateConfigWithActivation(domain, email.email);
-      let activation_code = response.activation_code;
+      let activation_code = response.ACTIVATION_CODE;
       await fetch(`https://notify-api.is-a.dev/api/preregister?domain=${domain}&pr=${pr}&activation_code=${activation_code}&token=${process.env.NOTIFY_TOKEN}`)
       return res.json({ success: true });
     }
@@ -256,6 +256,47 @@ app.get("/api/preregister", async (req, res) => {
   }
 });
 
+app.get('/api/domain/set-password', async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+
+    let user = getJWT(jwt);
+    if (!user) return res.status(403).send('Invalid JWT');
+
+    // Fetch data from API to authenticate the user
+    let data = await fetch(process.env.API_URL + '/domains/' + domain + '/get');
+    data = await data.json();
+
+    if (data.error) return res.status(500).send(data.error);
+    if (data.owner?.username != user.user.login)
+      return res
+        .status(403)
+        .json({ error: 'You are not the owner of this domain' });
+
+    let password = req.query.password;
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update the user's password in the database
+    const User = mongoose.model('hostingdata'); // Replace with your Mongoose model name
+    const updatedUser = await User.findOneAndUpdate(
+      { domain },
+      { HashedPassword: hashedPassword },
+      { new: true } // Return the updated user document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 app.get("/api/register", async (req, res) => {
   try {
