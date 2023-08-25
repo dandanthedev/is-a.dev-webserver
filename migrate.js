@@ -10,7 +10,7 @@ const dbName = process.env.DATABASE_NAME || 'your_database_name';
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(uri + "/" + dbName, { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function processConfigFiles(directoryPath) {
   try {
@@ -33,11 +33,17 @@ async function processConfigFiles(directoryPath) {
       } else if (file === 'config.json') {
         const configData = fs.readFileSync(filePath, 'utf-8');
         const configObj = JSON.parse(configData);
+        let pas = '';
+        // hash password
+        if (configObj.ftp_password) {
+            pas = await bcrypt.hash(configObj.ftp_password, 10);
+        }
+
 
         // Extract relevant fields from configObj
         const userData = {
           domain: folderName,
-          HashedPassword: configObj.HashedPassword,
+          HashedPassword: pas,
           FTP: configObj.ftp,
         };
 
@@ -73,7 +79,7 @@ async function processConfigFiles(directoryPath) {
 
 async function main() {
   try {
-    await processConfigFiles('/path/to/contents/folder');
+    await processConfigFiles('content/');
   } finally {
     await mongoose.connection.close();
     console.log('Disconnected from MongoDB (Mongoose)');
