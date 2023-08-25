@@ -13,6 +13,7 @@
     "@sendgrid/mail": "^7.7.0",
     "@sentry/node": "^7.64.0",
     "archiver": "^6.0.0",
+    "bcrypt": "^5.1.1",
     "chmod": "^0.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

@@ -4,13 +4,15 @@ const path = require('path');
 const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
 const userSchema = require('./data'); // Import your Mongoose schema definition
+// bcrypt
+const bcrypt = require('bcrypt');
 
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
 const dbName = process.env.DATABASE_NAME || 'your_database_name';
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-mongoose.connect(uri + "/" + dbName, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(uri + "/hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function processConfigFiles(directoryPath) {
   try {
