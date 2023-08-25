@@ -2,7 +2,6 @@ require("dotenv").config();
 const Sentry = require("@sentry/node");
 const express = require("express");
 const session = require("express-session");
-const mongoose = require("mongoose");
 const path = require('path');
 const cors = require("cors");
 const archiver = require('archiver');
