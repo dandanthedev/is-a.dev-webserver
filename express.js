@@ -10,6 +10,19 @@ const { generateConfig, getUserFiles, generateConfigWithActivation, activateDoma
 const { getSocketJWT } = require("./auth.js");
 const { sgMail } = require('@sendgrid/mail');
 const app = express();
+const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+const userSchema = require('./data'); // Import your Mongoose schema definition
+// bcrypt
+const bcrypt = require('bcrypt');
+
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
+const dbName = process.env.DATABASE_NAME || 'your_database_name';
+
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+mongoose.connect(uri + "hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
+
 Sentry.init({
   dsn: "https://244a1ad4b427c80530cffbebc2c7b3a4@o4505716264599552.ingest.sentry.io/4505716341800960",
   integrations: [
@@ -275,7 +288,7 @@ app.get("/api/register", async (req, res) => {
     }
     let response = generateConfig(domain);
 
-    return res.json({ success: true, pass: response.ftp_password });
+    return res.json({ success: true, pass: 'NOT ready' });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err });
@@ -308,56 +321,60 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 
 app.get("*", async (req, res) => {
   try {
-    //Domain variable
+    // Domain variable
     let domain = req.headers.host;
     domain = domain.split(":")[0];
     domain = domain.split(".is-a.dev")[0];
 
-    //Check if the domain exists
-    if (!fs.existsSync(`content/${domain}`))
-      return res.status(404).sendFile(__dirname + "/404.html");
+    // Connect to MongoDB and find user data
+    const User = mongoose.model("hostingdata"); // Replace with your Mongoose model name
+    const user = await User.findOne({ domain }).exec();
 
-    //Load config
-    let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
-    config = JSON.parse(config);
-    let file = req.url;
-    // remove query string
-    if (file.includes("?")) file = file.split("?")[0];
-
-    //Password protection
-    if (config.password !== undefined && req.query.password != config.password)
-      return res.sendFile(__dirname + "/login.html");
-
-    // if congig.protected_route matches file the send login.html
-    if (config.protected_route !== undefined && file == config.protected_route && req.query.password != config.route_password)
-      return res.sendFile(__dirname + "/login.html");
-
-    if (config.activation_code !== undefined)
-      return res.sendFile(__dirname + "/activation.html");
-
-
-    //Get file
-    if (file.includes(".."))
-      return res.status(403).sendFile(__dirname + "/403.html");
-    if (file.startsWith("/")) file = file.substring(1);
-
-    //Check if file exists
-    let path = `content/${domain}/${file}`;
-    // if path is a directory, add index.html
-    if (fs.lstatSync(path).isDirectory()) path += "/index.html";
-    if (!fs.existsSync(path)) {
-      //if custom 404 exists, send it, else send default
-      if (fs.existsSync(`${domain}/404.html`))
-        return res.status(404).sendFile(`${domain}/404.html`);
+    if (!user) {
       return res.status(404).sendFile(__dirname + "/404.html");
     }
 
-    //Serve file
+    let file = req.url;
+    // Remove query string
+    if (file.includes("?")) file = file.split("?")[0];
+
+    // Password protection
+    if (user.HashPagePassword && !bcrypt.compareSync(req.query.password, user.HashPagePassword)) {
+      return res.sendFile(__dirname + "/login.html");
+    }
+
+    if (user.ACTIVATION_CODE !== undefined) {
+      return res.sendFile(__dirname + "/activation.html");
+    }
+
+    // Get file
+    if (file.includes("..")) {
+      return res.status(403).sendFile(__dirname + "/403.html");
+    }
+    if (file.startsWith("/")) {
+      file = file.substring(1);
+    }
+
+    // Check if file exists
+    let path = `content/${domain}/${file}`;
+    // If path is a directory, add index.html
+    if (fs.lstatSync(path).isDirectory()) {
+      path += "/index.html";
+    }
+    if (!fs.existsSync(path)) {
+      // If custom 404 exists, send it, else send default
+      if (fs.existsSync(`${domain}/404.html`)) {
+        return res.status(404).sendFile(`${domain}/404.html`);
+      }
+      return res.status(404).sendFile(__dirname + "/404.html");
+    }
+
+    // Serve file
     return res.sendFile(__dirname + "/" + path);
   } catch (err) {
     console.log(err);
     return res.status(500).sendFile(__dirname + "/500.html");
-  }
+  } 
 });
 
 

@@ -3,45 +3,54 @@ const chmod = require("chmod");
 require("dotenv").config();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+const userSchema = require('./data'); // Import your Mongoose schema definition
+// bcrypt
+const bcrypt = require('bcrypt');
 
-function generateConfigWithActivation(domain, email) {
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
+const dbName = process.env.DATABASE_NAME || 'your_database_name';
+
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+mongoose.connect(uri + "hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
+
+
+
+async function generateConfigWithActivation(domain, email) {
   let config = {};
     config = {
-      activation_code: 
+      domain: domain,
+      ACTIVATION_CODE: 
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15),
-      activation_email: email,
-      ftp: true,
-      ftp_password:
+      ACTIVATION_EMAIL: email,
+      FTP: true,
+      ACTIVATED: false,
+      HashedPassword:
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15),
     };
+    let userDocument = new userSchema(config);
+    await userDocument.save();
   
-  
-  fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
-  //make the config file writable, but not deletable
-  chmod(`content/${domain}/config.json`, 644);
 
   return config;
 }
 
-function generateConfig(domain) {
+async function generateConfig(domain) {
   let config = {};
     config = {
-      ftp: true,
-      ftp_password:
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15),
-      smtp: false,
-      smtp_password:
+      domain: domain,
+      FTP: true,
+      ACTIVATED: true,
+      HashedPassword:
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15),
     };
-  
-  
-  fs.writeFileSync(`content/${domain}/config.json`, JSON.stringify(config));
-  //make the config file writable, but not deletable
-  chmod(`content/${domain}/config.json`, 644);
+    let userDocument = new userSchema(config);
+    await userDocument.save();
 
   return config;
 }

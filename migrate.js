@@ -47,6 +47,7 @@ async function processConfigFiles(directoryPath) {
           domain: folderName,
           HashedPassword: pas,
           FTP: configObj.ftp,
+          ACTIVATED: 'true',
         };
 
         // Conditionally add HashPagePassword if it exists

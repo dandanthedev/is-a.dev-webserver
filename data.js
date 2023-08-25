@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
         EMAIL: Boolean,
         ACTIVATED: Boolean,
         ACTIVATION_CODE: String,
+        ACTIVATION_EMAIL: String,
     },
     { collection: "hostingdata" }
 );
