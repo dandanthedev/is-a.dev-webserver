@@ -5,4 +5,7 @@ require(__dirname + "/express.js");
 require(__dirname + "/ftp.js");
 
 //SMTP
-require(__dirname + "/smtp.js");
+//require(__dirname + "/smtp.js");
+
+//LDAP
+require(__dirname + "/ldap.js");

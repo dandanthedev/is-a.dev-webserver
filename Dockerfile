@@ -15,4 +15,4 @@ COPY . /usr/src/dev
 
 
 # Start me!
-CMD ["./entrypoint.sh"]
+CMD ["node", "index.js"]
