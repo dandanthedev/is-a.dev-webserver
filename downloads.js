@@ -29,7 +29,7 @@ const checkLinkExpiration = async (req, res, next) => {
     try {
         const link = await LinkExpiration.findOne({ linkId });
         if (!link || link.domain !== domain) {
-            return res.status(403).sendFile(__dirname + "/expired.html");
+            return res.status(403).send('Forbidden');
         }
         if (!link || link.expiration < new Date()) {
             return res.status(403).sendFile(__dirname + "/expired.html");
