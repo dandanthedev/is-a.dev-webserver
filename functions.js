@@ -36,7 +36,7 @@ async function generateConfigWithActivation(domain, email) {
     await userDocument.save();
   
 
-  return config;
+  return config.ACTIVATION_CODE;
 }
 
 async function generateConfig(domain) {
