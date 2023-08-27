@@ -50,7 +50,12 @@ async function generateLink(domain, fileName) {
         const linkId = generateLinkId(); // Generate a unique link identifier
         const expiration = new Date(Date.now() + (24 * 60 * 60 * 1000)); // Link expires in 24 hours
 
-        await LinkExpiration.create({ domain, fileName, linkId, expiration });
+        try {
+            await LinkExpiration.create({ domain, fileName, linkId, expiration });
+            console.log('Link saved successfully.');
+        } catch (error) {
+            console.error('Error saving link:', error);
+        }
 
         const link = `https://hosts.is-a.dev/api/protected/${domain}/${linkId}`;
         return link;
