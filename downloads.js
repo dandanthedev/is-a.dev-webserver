@@ -10,8 +10,6 @@ const bcrypt = require('bcrypt');
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
 const dbName = process.env.DATABASE_NAME || 'your_database_name';
 
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
 mongoose.connect(uri + "hosting-links", { useNewUrlParser: true, useUnifiedTopology: true });
 
 const LinkExpiration = mongoose.model('LinkExpiration', {
@@ -28,6 +26,7 @@ const checkLinkExpiration = async (req, res, next) => {
 
     try {
         const link = await LinkExpiration.findOne({ linkId });
+        consle.log(linkId + " " + link.domain);
         if (!link || link.domain !== domain) {
             return res.status(403).send('Forbidden');
         }
