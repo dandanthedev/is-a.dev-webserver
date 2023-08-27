@@ -1,0 +1,47 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Site not Found</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://api.fonts.coollabs.io/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+
+    <style>
+      .vt323 {
+        font-family: "VT323", monospace;
+      }
+      .bg {
+        background-color: #0f0c19;
+      }
+    </style>
+  </head>
+  <body
+    class="bg text-white text-center vt323 text-4xl flex flex-col justify-center items-center h-screen"
+  >
+    <img
+      src="https://raw.githubusercontent.com/is-a-dev/register/4c8cd44942205ccda6b6c7ecdc2974b110f39615/media/logo.png"
+      class="fixed top-0 left-0"
+      width="100px"
+      height="100px"
+    />
+    <span id="typehere" class="display-inline-block">
+      <noscript> This page was not found. </noscript>
+    </span>
+  </body>
+  <script>
+    var typed = new Typed("#typehere", {
+      strings: [
+        "Sorry that link has expired.",
+      ],
+      typeSpeed: 50,
+      //disable cursor
+      showCursor: false,
+      //loop
+      loop: true,
+    });
+  </script>
+</html>

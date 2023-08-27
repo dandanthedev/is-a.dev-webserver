@@ -6,6 +6,7 @@ const path = require('path');
 const cors = require("cors");
 const archiver = require('archiver');
 const { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain } = require("./functions.js");
+const { generateLink, checkLinkExpiration } = require("./downloads.js");
 const { getSocketJWT } = require("./auth.js");
 const { sgMail } = require('@sendgrid/mail');
 const app = express();
@@ -41,6 +42,7 @@ Sentry.init({
 // Trace incoming requests
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
+app.set("view engine", "ejs");
 
 const port = 3000;
 
@@ -115,7 +117,12 @@ app.post("/api/upload", async (req, res) => {
   }
 });
 
-    
+app.get('/api/protected/:domain/:linkId', checkLinkExpiration, (req, res) => {
+  // Serve a file (you might need to adjust the file path)
+  res.render('archive', { domain: req.params.domain + ".is-a.dev", download: req.params.linkId });
+  
+
+});    
 
 app.get('/api/download', async (req, res) => {
   // get user input
