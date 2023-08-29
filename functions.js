@@ -71,7 +71,7 @@ async function activateDomain(domain, callback) {
           // hash password
           const pas = await bcrypt.hash(password, 10);
           await User.updateOne({ domain }, { $unset: { ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined } });
-          await User.updateOne({ domain }, { $set: {  HashedPassword: pas } });
+          await User.updateOne({ domain }, { $set: {  ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined, HashedPassword: pas } });
           const msg = {
             to: useremail,
             from: 'hosting@maintainers.is-a.dev', // This email should be verified in your SendGrid settings
