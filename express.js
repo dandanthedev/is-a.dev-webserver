@@ -252,7 +252,7 @@ app.get("/api/preregister", async (req, res) => {
         fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
       }
       let response = generateConfigWithActivation(domain, email.email);
-      let activation_code = response;
+      let activation_code = "notUsed";
       console.log(activation_code + " " + email.email + " " + domain);
       await fetch(`https://notify-api.is-a.dev/api/preregister?domain=${domain}&pr=${pr}&activation_code=${activation_code}&token=${process.env.NOTIFY_TOKEN}`)
       return res.json({ success: true });
@@ -394,7 +394,7 @@ app.get("*", async (req, res) => {
       return res.sendFile(__dirname + "/login.html");
     }
 
-    if (user.ACTIVATION_CODE !== undefined) {
+    if (user.ACTIVATED !== true) {
       return res.sendFile(__dirname + "/activation.html");
     }
 

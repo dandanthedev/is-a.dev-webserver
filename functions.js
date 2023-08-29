@@ -22,9 +22,6 @@ async function generateConfigWithActivation(domain, email) {
   let config = {};
     config = {
       domain: domain,
-      ACTIVATION_CODE: 
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15),
       ACTIVATION_EMAIL: email,
       FTP: true,
       ACTIVATED: false,
@@ -70,8 +67,7 @@ async function activateDomain(domain, callback) {
           password = config.HashedPassword;
           // hash password
           const pas = await bcrypt.hash(password, 10);
-          await User.updateOne({ domain }, { $unset: { ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined } });
-          await User.updateOne({ domain }, { $set: {  ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined, HashedPassword: pas } });
+          await User.updateOne({ domain }, { $set: {  ACTIVATED: true, HashedPassword: pas } });
           const msg = {
             to: useremail,
             from: 'hosting@maintainers.is-a.dev', // This email should be verified in your SendGrid settings
