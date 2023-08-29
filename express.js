@@ -206,8 +206,12 @@ app.get("/api/domain", async (req, res) => {
 
 app.get("/api/activate", async (req, res) => {
   let domain = req.query.domain;
-  let activation_code = req.query.activation_code;
-  activateDomain(domain, activation_code, async (err, result) => {
+  let NOTIFY = req.query.NOTIFY_TOKEN;
+  // if notify token dosnt match process.env.NOTIFY_TOKEN return 403
+  if (NOTIFY !== process.env.NOTIFY_TOKEN) return res.status(403).send("Invalid token");
+
+  //let activation_code = req.query.activation_code;
+  activateDomain(domain, async (err, result) => {
     if (err) {
       console.error('Error:', err);
       return;

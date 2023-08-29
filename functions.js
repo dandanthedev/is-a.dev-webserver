@@ -55,23 +55,23 @@ async function generateConfig(domain) {
   return config;
 }
 
-async function activateDomain(domain, activation_code, callback) {
+async function activateDomain(domain, callback) {
   const User = mongoose.model("hostingdata"); // Replace with your Mongoose model name
   const user = await User.findOne({ domain }).exec();
     let useremail = '';
 
     try {
       let config = user;
-      console.log(config.activation_code);
+      //console.log(config.activation_code);
       
-      if (config.ACTIVATION_CODE === activation_code) {
+      //if (config.ACTIVATION_CODE === activation_code) {
         // Remove activation code
           useremail = config.ACTIVATION_EMAIL;
           password = config.HashedPassword;
           // hash password
           const pas = await bcrypt.hash(password, 10);
           await User.updateOne({ domain }, { $unset: { ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined } });
-          await User.updateOne({ domain }, { $set: { ACTIVATION_CODE: undefined, ACTIVATION_EMAIL: undefined, HashedPassword: pas } });
+          await User.updateOne({ domain }, { $set: {  HashedPassword: pas } });
           const msg = {
             to: useremail,
             from: 'hosting@maintainers.is-a.dev', // This email should be verified in your SendGrid settings
@@ -93,7 +93,7 @@ async function activateDomain(domain, activation_code, callback) {
 
           // Success: Activation code matched and config file updated
           callback(null, true);
-    };
+    
 }
     catch (err) {
       // Error: Activation code did not match
