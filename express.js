@@ -414,8 +414,8 @@ app.get("*", async (req, res) => {
     }
     if (!fs.existsSync(path)) {
       // If custom 404 exists, send it, else send default
-      if (fs.existsSync(`${domain}/404.html`)) {
-        return res.status(404).sendFile(`${domain}/404.html`);
+      if (fs.existsSync(`content/${domain}/404.html`)) {
+        return res.status(404).sendFile(__dirname + `content/${domain}/404.html`);
       }
       return res.status(404).sendFile(__dirname + "/404.html");
     }
