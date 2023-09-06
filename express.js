@@ -188,7 +188,7 @@ app.get("/api/domain", async (req, res) => {
 
     
     if (data.error) return res.status(500).send(data.error);
-    if (data.owner?.username != user.user.login)
+    if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
       return res
         .status(403)
         .json({ error: "You are not the owner of this domain" });
@@ -281,7 +281,7 @@ app.get('/api/domain/set-password', async (req, res) => {
     data = await data.json();
 
     if (data.error) return res.status(500).send(data.error);
-    if (data.owner?.username != user.user.login)
+    if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
       return res
         .status(403)
         .json({ error: 'You are not the owner of this domain' });
