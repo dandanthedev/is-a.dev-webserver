@@ -176,7 +176,7 @@ app.get('/api/download', async (req, res) => {
 
 app.get("/api/pannel", async (req, res) => {
   let jwt = req.query.jwt;
-  let domain = req.query.domain;
+  let domain = req.query.domain + ".is-a.dev";
   let user = getJWT(jwt);
   let profilepic = `https://avatars.githubusercontent.com/${user.user.login}`
   if (!user) return res.status(403).send("Invalid JWT");
@@ -189,7 +189,7 @@ app.get("/api/pannel", async (req, res) => {
     return res
       .status(403)
       .json({ error: "You are not the owner of this domain" });
-  return res.render("pannel", { username: user.user, profilepic: profilepic, domain: domain });
+  return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain });
 });
 
 app.get("/api/domain", async (req, res) => {
