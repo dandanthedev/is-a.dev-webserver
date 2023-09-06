@@ -23,6 +23,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 mongoose.connect(uri + "hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
 
+const User = mongoose.model("hostingdata"); 
+
 Sentry.init({
   dsn: "https://244a1ad4b427c80530cffbebc2c7b3a4@o4505716264599552.ingest.sentry.io/4505716341800960",
   integrations: [
@@ -183,14 +185,21 @@ app.get("/api/pannel", async (req, res) => {
 
   let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
   data = await data.json();
+  const domainData = await User.findOne({ domain }).exec();
+  let EMAIL = '';
+  if (domainData.EMAIL == undefined) {
+    EMAIL = "false";
+  } else {
+    EMAIL = domainData.EMAIL;
+  }
+    
   domain = domain + ".is-a.dev"
-
   if (data.error) return res.status(500).send(data.error);
   if (data.owner?.username != user.user.login)
     return res
       .status(403)
       .json({ error: "You are not the owner of this domain" });
-  return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain });
+  return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain, SMTP: EMAIL });
 });
 
 app.get("/api/domain", async (req, res) => {
