@@ -176,13 +176,14 @@ app.get('/api/download', async (req, res) => {
 
 app.get("/api/pannel", async (req, res) => {
   let jwt = req.query.jwt;
-  let domain = req.query.domain + ".is-a.dev";
+  let domain = req.query.domain;
   let user = getJWT(jwt);
   let profilepic = `https://avatars.githubusercontent.com/${user.user.login}`
   if (!user) return res.status(403).send("Invalid JWT");
 
   let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
   data = await data.json();
+  domain = domain + ".is-a.dev"
 
   if (data.error) return res.status(500).send(data.error);
   if (data.owner?.username != user.user.login)
