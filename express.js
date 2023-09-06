@@ -194,6 +194,7 @@ app.get("/api/SMTP", async (req, res) => {
     { domain },
     { EMAIL: enabled })
   return res.json({ success: true });
+});
 
 app.get("/api/pannel", async (req, res) => {
   let jwt = req.query.jwt;
