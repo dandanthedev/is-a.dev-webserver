@@ -325,6 +325,7 @@ app.get("/api/preregister", async (req, res) => {
 app.get('/api/domain/set-password', async (req, res) => {
   try {
     let domain = req.query.domain;
+    domain = domain.split(".is-a.dev")[0];
     let jwt = req.query.jwt;
 
     let user = getJWT(jwt);
