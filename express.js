@@ -188,10 +188,10 @@ app.get("/api/domain", async (req, res) => {
 
     
     if (data.error) return res.status(500).send(data.error);
-    if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
-      return res
-        .status(403)
-        .json({ error: "You are not the owner of this domain" });
+    //if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+      //return res
+        //.status(403)
+        //.json({ error: "You are not the owner of this domain" });
 
     if (!fs.existsSync(`content/${domain}`))
       return res.status(404).json({ error: "Domain dosnt' exist" });
