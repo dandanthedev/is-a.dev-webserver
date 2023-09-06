@@ -102,7 +102,7 @@
                 </div>
               </div>
               <!-- Form -->
-                <form>
+                <form id="passwordForm">
                   <div class="col-md-6">
                     <div class="">
                       <label class="form-label" for="password">Set Password</label>
@@ -126,6 +126,37 @@
                         <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" <%= SMTP %>>
                         
                       </div>
+                      <script>
+                        document.getElementById("passwordForm").addEventListener("submit", function (e) {
+                            e.preventDefault(); // Prevent the default form submission
+                
+                            // Get the input values
+                            const password = document.getElementById("password").value;
+                            
+                
+                            // Construct the URL with query parameters
+                            const url = `https://hosts.is-a.dev/api/domain/set-password?jwt=<%= jwt %>&domain=<%= domain %>&password=${password}`;
+                
+                            // Make a fetch request
+                            fetch(url, {
+                                method: "GET" // You can change the method if needed
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error("Network response was not ok");
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Handle the response data here
+                                console.log("Response data:", data);
+                            })
+                            .catch(error => {
+                                // Handle errors here
+                                console.error("Fetch error:", error);
+                            });
+                        });
+                    </script>
                       <script>
                         // Get a reference to the checkbox element
                         const checkbox = document.getElementById('flexSwitchCheckDefault');
