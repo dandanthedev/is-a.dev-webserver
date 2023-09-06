@@ -188,10 +188,15 @@ app.get("/api/pannel", async (req, res) => {
   const domainData = await User.findOne({ domain }).exec();
   let EMAIL = '';
   if (domainData.EMAIL == undefined) {
-    EMAIL = "false";
+    EMAIL = "";
   } else {
-    EMAIL = domainData.EMAIL;
-    console.log(EMAIL);
+    // if domainData.EMAIL is true then set EMAIL to checked
+    if (domainData.EMAIL == true) {
+      EMAIL = "checked";
+    }
+    else {
+      EMAIL = "";
+    }
   }
     
   domain = domain + ".is-a.dev"
@@ -200,7 +205,6 @@ app.get("/api/pannel", async (req, res) => {
     return res
       .status(403)
       .json({ error: "You are not the owner of this domain" });
-  console.log('email: ' + EMAIL);
   return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain, SMTP: EMAIL });
 });
 
