@@ -191,6 +191,7 @@ app.get("/api/pannel", async (req, res) => {
     EMAIL = "false";
   } else {
     EMAIL = domainData.EMAIL;
+    console.log(EMAIL);
   }
     
   domain = domain + ".is-a.dev"
@@ -199,6 +200,7 @@ app.get("/api/pannel", async (req, res) => {
     return res
       .status(403)
       .json({ error: "You are not the owner of this domain" });
+  console.log('email: ' + EMAIL);
   return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain, SMTP: EMAIL });
 });
 
