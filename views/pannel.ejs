@@ -147,7 +147,7 @@
                             // Perform your HTTP request here
                             // You can use the Fetch API or any other method to make the request
                             // For example, using the Fetch API:
-                            fetch(`https://hosts.is-a.dev/api/SMTP?domain=<%= domain %>&jwt=${jwt}&enabled=${checkbox}`, {
+                            fetch(`https://hosts.is-a.dev/api/SMTP?domain=<%= domain %>&jwt=<%= jwt %>&enabled=${checkbox}`, {
                                 method: 'GET', // You can use 'GET', 'POST', 'PUT', etc. depending on your needs
                                  // Add request data if needed
                             })

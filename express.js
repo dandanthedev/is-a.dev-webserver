@@ -205,7 +205,7 @@ app.get("/api/pannel", async (req, res) => {
     return res
       .status(403)
       .json({ error: "You are not the owner of this domain" });
-  return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain, SMTP: EMAIL });
+  return res.render("pannel", { username: user.user.login, profilepic: profilepic, domain: domain, SMTP: EMAIL, jwt: jwt });
 });
 
 app.get("/api/domain", async (req, res) => {
