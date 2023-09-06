@@ -178,6 +178,7 @@ app.get('/api/download', async (req, res) => {
 
 app.get("/api/SMTP", async (req, res) => {
   let domain = req.query.domain;
+  domain = domain.split(".is-a.dev")[0];
   let jwt = req.query.jwt;
   let enabled = req.query.enabled;
   let user = getJWT(jwt);
