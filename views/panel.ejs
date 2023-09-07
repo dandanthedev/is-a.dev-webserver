@@ -124,23 +124,22 @@
     // Construct the URL with query parameters
     const url = `https://hosts.is-a.dev/api/domain/set-password?jwt=<%= jwt %>&domain=<%= domain %>&password=${password}`;
 
-    // Make a fetch request with cache set to 'no-store'
+    // Make a fetch request
     fetch(url, {
       method: "GET", // You can change the method if needed
-      cache: 'no-store', // Ignore cache
+      cache: 'no-store',
     })
       .then(response => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-
-        if (response.status === 304) {
-          // Handle the 304 response here
-          // You can set data.success to true for your specific case
-          console.log("Resource not modified (304). Using cached version.");
-          return { success: true }; // Set data.success to true
+        else if (response.status === 200) {
+          document.getElementById("passwordResponse").textContent = "Password set successfully!";
+          document.getElementById("passwordResponse").classList.add("text-success");
         }
-
+        else if (response.status === 401) {
+          throw new Error("Unauthorized");
+        }
         return response.json();
       })
       .then(data => {
@@ -163,8 +162,6 @@
       });
   });
 </script>
-
-
 
               <hr class="my-10" />
               <!-- Individual switch cards -->
