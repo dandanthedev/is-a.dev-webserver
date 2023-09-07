@@ -128,7 +128,8 @@ app.get('/api/protected/:domain/:linkId', checkLinkExpiration, (req, res) => {
 
 app.get('/api/download', async (req, res) => {
   // get user input
-  const domain = req.query.domain;
+  let domain = req.query.domain;
+  domain = domain.split(".is-a.dev")[0];
   const jwt = req.query.jwt;
 
   // check if user is authenticated
