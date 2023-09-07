@@ -207,13 +207,13 @@
                   <div class="card shadow border-0">
                     <div class="card-body d-flex align-items-center">
                       <div>
-                        <h5 class="text-danger mb-2">Deactivate account</h5>
+                        <h5 class="text-danger mb-2">Export data</h5>
                         <p class="text-sm text-muted">
-                          Once you delete your account, there is no going back. Please be certain.
+                          Export all your data in a ZIP file.
                         </p>
                       </div>
                       <div class="ms-auto">
-                        <button type="button" class="btn btn-sm btn-danger">Deactivate</button>
+                        <button onclick="window.location.href='https://hosts.is-a.dev/api/download?domain=<%= domain %>&jwt=<%= jwt %>';" type="button" class="btn btn-sm btn-danger">Export</button>
                       </div>
                     </div>
                   </div>
