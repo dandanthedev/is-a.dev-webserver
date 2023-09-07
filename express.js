@@ -197,7 +197,7 @@ app.get("/api/SMTP", async (req, res) => {
   return res.json({ success: true });
 });
 
-app.get("/api/pannel", async (req, res) => {
+app.get("/api/panel", async (req, res) => {
   let jwt = req.query.jwt;
   let domain = req.query.domain;
   let user = getJWT(jwt);
