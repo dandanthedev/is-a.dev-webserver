@@ -129,9 +129,17 @@
       method: "GET", // You can change the method if needed
     })
       .then(response => {
+        if (response.status === 304) {
+          // Handle the 304 response here
+          // You can set data.success to true for your specific case
+          console.log("Resource not modified (304). Using cached version.");
+          return { success: true }; // Set data.success to true
+        }
+
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
+
         return response.json();
       })
       .then(data => {
@@ -154,6 +162,7 @@
       });
   });
 </script>
+
 
               <hr class="my-10" />
               <!-- Individual switch cards -->
