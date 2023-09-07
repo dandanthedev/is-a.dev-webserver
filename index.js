@@ -8,4 +8,4 @@ require(__dirname + "/ftp.js");
 //require(__dirname + "/smtp.js");
 
 //LDAP
-require(__dirname + "/ldap.js");
+//require(__dirname + "/ldap.js");
