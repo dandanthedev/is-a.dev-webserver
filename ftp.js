@@ -26,6 +26,7 @@ const { generateConfig } = require("./functions.js");
 
 // Function to calculate the size of a file (you need to implement this)
 function calculateFileSize(filename) {
+  return '22'
   // Implement logic to calculate the size of the file
   // For example, you can use fs.statSync(filename).size
 }
