@@ -30,37 +30,7 @@ function calculateFileSize(filename) {
   // For example, you can use fs.statSync(filename).size
 }
 
-ftpServer.on("login", async ({ connection, username, password }, resolve, reject) => {
-  try {
-    if (
-      username.includes("..") ||
-      username.includes("/") ||
-      username.includes("\\") ||
-      username.includes(" ")
-    )
-      return reject("Invalid username");
 
-    const User = mongoose.model("hostingdata"); // Replace with your Mongoose model name
-    const user = await User.findOne({ domain: username }).exec();
-
-    if (!user) {
-      return reject("User does not exist");
-    }
-
-    if (!user.FTP) {
-      return reject("FTP is disabled for this user");
-    }
-
-    if (user.HashedPassword && !bcrypt.compareSync(password, user.HashedPassword)) {
-      return reject("Invalid password");
-    }
-
-    return resolve({ root: `content/${username}` });
-  } catch (err) {
-    console.log(err);
-    return reject("Internal server error");
-  }
-});
 
 ftpServer.on("stor", async ({ connection, username, filename }, accept, reject) => {
   try {
