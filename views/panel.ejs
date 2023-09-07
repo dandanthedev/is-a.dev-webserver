@@ -131,9 +131,10 @@
     })
       .then(response => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          document.getElementById("passwordResponse").textContent = "Password change failed.";
+          document.getElementById("passwordResponse").classList.add("text-danger");
         }
-        else if (response.status === 200) {
+        else if (response.ok) {
           document.getElementById("passwordResponse").textContent = "Password set successfully!";
           document.getElementById("passwordResponse").classList.add("text-success");
         }
@@ -142,24 +143,6 @@
         }
         return response.json();
       })
-      .then(data => {
-        // Handle the response data here
-        if (data.success) {
-          // Password change was successful
-          document.getElementById("passwordResponse").textContent = "Password set successfully!";
-          document.getElementById("passwordResponse").classList.add("text-success");
-        } else {
-          // Password change failed
-          document.getElementById("passwordResponse").textContent = "Password change failed.";
-          document.getElementById("passwordResponse").classList.add("text-danger");
-        }
-      })
-      .catch(error => {
-        // Handle errors here
-        console.error("Fetch error:", error);
-        document.getElementById("passwordResponse").textContent = "An error occurred.";
-        document.getElementById("passwordResponse").classList.add("text-danger");
-      });
   });
 </script>
 
