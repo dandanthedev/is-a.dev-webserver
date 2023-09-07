@@ -124,20 +124,21 @@
     // Construct the URL with query parameters
     const url = `https://hosts.is-a.dev/api/domain/set-password?jwt=<%= jwt %>&domain=<%= domain %>&password=${password}`;
 
-    // Make a fetch request
+    // Make a fetch request with cache set to 'no-store'
     fetch(url, {
       method: "GET", // You can change the method if needed
+      cache: 'no-store', // Ignore cache
     })
       .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
         if (response.status === 304) {
           // Handle the 304 response here
           // You can set data.success to true for your specific case
           console.log("Resource not modified (304). Using cached version.");
           return { success: true }; // Set data.success to true
-        }
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
         }
 
         return response.json();
@@ -162,6 +163,7 @@
       });
   });
 </script>
+
 
 
               <hr class="my-10" />
