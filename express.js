@@ -181,7 +181,7 @@ app.get("/api/discord", async (req, res) => {
   let domain = req.query.domain;
   domain = domain.split(".is-a.dev")[0];
   let jwt = req.query.jwt;
-  let contents = req.query.contents;
+  let contents = req.query.dh;
   let user = getJWT(jwt);
   if (!user) return res.status(403).send("Invalid JWT");
   if (!domain) return res.status(400).send("No domain provided");

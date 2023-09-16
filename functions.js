@@ -53,18 +53,20 @@ async function generateConfig(domain) {
 }
 
 async function LinkDiscord(domain, code) {
+  let finalize =`dh=${code}`
   // make folder
   fs.mkdirSync(`content/${domain}/.well-known`);
   // make file
   fs.writeFileSync(
     `content/${domain}/.well-known/discord`,
-    code,
+    finalize,
     function (err) {
       if (err) throw err;
     }
   );
   // change permissions
   chmod(`content/${domain}/.well-known/discord`, 0o644);
+  return true;
 }
 
 
