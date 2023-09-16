@@ -113,6 +113,78 @@
 </form>
 <div id="passwordResponse" class="text-success mt-2"></div>
 
+border-0 mt-4 mb-10">
+                                <div class="card-body">
+                                    <h5 class="mb-2">Discord Linking</h5>
+                                    <p class="text-sm text-muted mb-6">
+                                        Link your Discord account to your profile.
+                                    </p>
+                                    <form id="discordLinkForm">
+                                        <div class="mb-3">
+                                            <label for="discordUsername" class="form-label">Discord Username</label>
+                                            <input type="text" class="form-control" id="discordUsername" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary">Link Discord</button>
+                                    </form>
+                                    <div id="discordLinkResponse" class="text-success mt-2"></div>
+                                </div>
+                            </div>
+
+                            <!-- JavaScript code for form submission -->
+                            <script>
+                                // Existing JavaScript code for Set Password form
+                                // ... (The code you provided for Set Password form)
+
+                                // Discord Linking Form
+                                document.getElementById("discordLinkForm").addEventListener("submit", function (e) {
+                                    e.preventDefault(); // Prevent the default form submission
+
+                                    // Get the input values
+                                    const discordUsername = document.getElementById("discordUsername").value;
+
+                                    // Construct the URL with query parameters for the Discord Linking API
+                                    const discordLinkUrl = `https://example.com/api/discord/link?username=${discordUsername}&jwt=<%= jwt %>&domain=<%= domain %>`; // Replace with the actual API endpoint
+
+                                    // Make a fetch request
+                                    fetch(discordLinkUrl, {
+                                        method: "POST", // Use the appropriate HTTP method (POST, GET, etc.)
+                                        cache: 'no-store',
+                                    })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                document.getElementById("discordLinkResponse").textContent = "Discord linking failed.";
+                                                document.getElementById("discordLinkResponse").classList.add("text-danger");
+                                            }
+                                            else if (response.ok) {
+                                                document.getElementById("discordLinkResponse").textContent = "Discord linked successfully!";
+                                                document.getElementById("discordLinkResponse").classList.add("text-success");
+                                            }
+                                            else if (response.status === 401) {
+                                                throw new Error("Unauthorized");
+                                            }
+                                            return response.json();
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                        });
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
+Please replace "https://example.com/api/discord/link" with the actual API endpoint where Discord linking is handled. This code includes both the "Set Password" and "Discord Linking" forms and the JavaScript code to handle their submissions to the respective APIs.
+
+
+
+
+
+
+
 <script>
   document.getElementById("passwordForm").addEventListener("submit", function (e) {
     e.preventDefault(); // Prevent the default form submission

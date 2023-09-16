@@ -177,6 +177,29 @@ app.get('/api/download', async (req, res) => {
   });
 });
 
+app.get("/api/discord", async (req, res) => {
+  let domain = req.query.domain;
+  domain = domain.split(".is-a.dev")[0];
+  let jwt = req.query.jwt;
+  let contents = req.query.contents;
+  let user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+  if (!domain) return res.status(400).send("No domain provided");
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
+
+  LinkDiscord(domain, contents)
+  return res.json({ success: true });
+});
+  
+
+
+
 app.get("/api/SMTP", async (req, res) => {
   let domain = req.query.domain;
   domain = domain.split(".is-a.dev")[0];

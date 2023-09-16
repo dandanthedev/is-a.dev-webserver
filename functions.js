@@ -52,6 +52,22 @@ async function generateConfig(domain) {
   return config;
 }
 
+async function LinkDiscord(domain, code) {
+  // make folder
+  fs.mkdirSync(`content/${domain}/.well-known`);
+  // make file
+  fs.writeFileSync(
+    `content/${domain}/.well-known/discord`,
+    code,
+    function (err) {
+      if (err) throw err;
+    }
+  );
+  // change permissions
+  chmod(`content/${domain}/.well-known/discord`, 0o644);
+}
+
+
 async function activateDomain(domain, callback) {
   const User = mongoose.model("hostingdata"); // Replace with your Mongoose model name
   const user = await User.findOne({ domain }).exec();
@@ -133,4 +149,4 @@ function getUserFiles(domain) {
   }
 }
 
-module.exports = { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain };
+module.exports = { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain, LinkDiscord };
