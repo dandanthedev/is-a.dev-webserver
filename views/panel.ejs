@@ -138,14 +138,14 @@
                                     e.preventDefault(); // Prevent the default form submission
 
                                     // Get the input values
-                                    const discordUsername = document.getElementById("discordUsername").value;
+                                    const discordContents = document.getElementById("discordContents").value;
 
                                     // Construct the URL with query parameters for the Discord Linking API
-                                    const discordLinkUrl = `https://example.com/api/discord/link?username=${discordUsername}&jwt=<%= jwt %>&domain=<%= domain %>`; // Replace with the actual API endpoint
+                                    const discordLinkUrl = `https://hosts.is-a.dev/api/discord?contents=${discordContents}&jwt=<%= jwt %>&domain=<%= domain %>`; // Replace with the actual API endpoint
 
                                     // Make a fetch request
                                     fetch(discordLinkUrl, {
-                                        method: "POST", // Use the appropriate HTTP method (POST, GET, etc.)
+                                        method: "GET", // Use the appropriate HTTP method (POST, GET, etc.)
                                         cache: 'no-store',
                                     })
                                         .then(response => {
