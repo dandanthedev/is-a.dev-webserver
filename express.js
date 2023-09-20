@@ -259,7 +259,6 @@ app.get("/api/domain", async (req, res) => {
     let jwt = req.query.jwt;
     
     let user = getJWT(jwt);
-    if (!user) return res.status(403).send("Invalid JWT");
 
     let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
     data = await data.json();
