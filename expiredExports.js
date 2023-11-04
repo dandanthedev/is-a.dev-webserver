@@ -15,5 +15,5 @@ async function checkExports() {
   });
 }
 
-exports.checkExports = checkExports;
+module.exports = checkExports;
 
