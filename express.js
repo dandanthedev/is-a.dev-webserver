@@ -3,6 +3,7 @@ const Sentry = require("@sentry/node");
 const express = require("express");
 const session = require("express-session");
 const path = require('path');
+const cron = require('node-cron');
 const cors = require("cors");
 const archiver = require('archiver');
 const { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain, LinkDiscord } = require("./functions.js");
@@ -14,6 +15,7 @@ const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
 const userSchema = require('./data'); // Import your Mongoose schema definition
 const exportSchema = require('./exports'); // 
+const checkExports = require('./expiredExports'); //
 // bcrypt
 const bcrypt = require('bcrypt');
 
@@ -789,5 +791,16 @@ io.on("connection", async (socket) => {
 });
 
 server.listen(3000, () => {
+  cron.schedule('0 * * * *', async () => {
+    try {
+      checkExports();
+    }
+    catch (error) {
+      console.error('Error removing expired links:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Europe/London"
+  });
   console.log("listening on *:3000");
 });
