@@ -354,11 +354,13 @@ app.get("/api/staff/delete", async (req, res) => {
   // create a uuid
   const uuid = require('uuid').v4();
 
+  let expiryDate = Date.now() + 1000 * 60 * 60 * 24 * 7;
+
   // add uuid to database
   const newExport = new exportSchema({
     _id: uuid,
     domain: domain,
-    expiryDate: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    expiryDate: expiryDate,
     fileName: `${domain}.zip`,
     avaliable: true,
   });
@@ -368,7 +370,7 @@ app.get("/api/staff/delete", async (req, res) => {
   await User.findOneAndDelete({ domain });
   // delete directory
   fs.rmSync(`content/${domain}`, { recursive: true });
-  return res.json({ success: true, export: `https://hosts.is-a.dev/api/data/exports?uuid=${uuid}` });
+  return res.json({ success: true, export: `https://hosts.is-a.dev/api/data/exports?uuid=${uuid}`, expiryDate: expiryDate });
 }
 );
 
