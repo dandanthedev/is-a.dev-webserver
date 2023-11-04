@@ -15,7 +15,7 @@ const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
 const userSchema = require('./data'); // Import your Mongoose schema definition
 const exportSchema = require('./exports'); // 
-const { checkExports } = require('./expiredExports'); //
+const checkExports = require('./expiredExports'); //
 // bcrypt
 const bcrypt = require('bcrypt');
 

@@ -1,4 +1,5 @@
 const exportSchema = require('./exports'); // 
+const fs = require('fs');
 
 
 // check all entries in database it see if they are expired
@@ -8,7 +9,7 @@ async function checkExports() {
   let exports = await exportSchema.find({});
   exports.forEach(async (exported) => {
     if (exported.expiryDate < Date.now()) {
-      fs.rmSync(`/webhosting/exports/${exported.fileName}`);
+      fs.rmSync(`/usr/src/dev/exports/${exported.fileName}`);
         await exportSchema.deleteOne({ fileName: exported.fileName });
       console.log(`Deleted ${exported.fileName}`);
     }
