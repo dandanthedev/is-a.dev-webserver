@@ -93,6 +93,20 @@ const req = require("express/lib/request.js");
 
 
 //api routes
+app.get("/api/getall", async (req, res) => {
+  try {
+    // get a list of all domains from the db
+    const domains = await User.find({}).exec();
+    // filter only the domain no other data
+    const domainList = domains.map((domain) => domain.domain);
+    // return the list
+    return res.json({ domains: domainList });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 app.post("/api/upload", async (req, res) => {
   try {
     let domain = req.query.domain;
