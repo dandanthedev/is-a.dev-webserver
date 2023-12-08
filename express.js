@@ -228,6 +228,7 @@ app.get("/api/SMTP", async (req, res) => {
   let domain = req.query.domain;
   let jwt = req.query.jwt;
   let password = req.query.password;
+  domain = domain.split(".is-a.dev")[0];
   let user = getJWT(jwt);
   if (!user) return res.status(403).send("Invalid JWT");
   if (!domain) return res.status(400).send("No domain provided");
