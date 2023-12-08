@@ -16,6 +16,15 @@ const mongoose = require('mongoose');
 const userSchema = require('./data'); // Import your Mongoose schema definition
 const exportSchema = require('./exports'); // 
 const checkExports = require('./expiredExports'); //
+
+const SMTPConfigSchema = new mongoose.Schema({
+  username: String,
+  HashedPassword: String,
+},{ collection: "SMTP" });
+
+// Create a mongoose model based on the schema
+const SMTPConfig = mongoose.model('SMTP', SMTPConfigSchema);
+
 // bcrypt
 const bcrypt = require('bcrypt');
 
@@ -215,7 +224,31 @@ app.get("/api/discord", async (req, res) => {
   return res.json({ success: true });
 });
   
+app.get("/api/SMTP", async (req, res) => {
+  let domain = req.query.domain;
+  let jwt = req.query.jwt;
+  let password = req.query.password;
+  let user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+  if (!domain) return res.status(400).send("No domain provided");
+  if (!password) return res.status(400).send("No password provided");
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
 
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(password, 10);
+  if (!SMTPConfig.findOne({ username: domain })) {
+    await SMTPConfig.create({ username: domain, HashedPassword: hashedPassword });
+  } else {
+    SMTPConfig.findOneAndUpdate({ username: domain }, { HashedPassword: hashedPassword });
+  }
+  return res.json({ success: true });
+});
 
 app.get("/api/panel", async (req, res) => {
   let jwt = req.query.jwt;
