@@ -205,61 +205,6 @@
 
               <hr class="my-10" />
               <!-- Individual switch cards -->
-              <div class="row g-6">
-                <div class="col-md-6">
-                  <div class="card shadow border-0">
-                    <div class="card-body">
-                      <h5 class="mb-2">Enable SMTP</h5>
-                      <p class="text-sm text-muted mb-6">
-                        Enabling SMTP will allow you to send emails from your domain.
-                      </p>
-                      <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" <%= SMTP %>>
-                        
-                      </div>
-                      <script>
-                        // Get a reference to the checkbox element
-                        const checkbox = document.getElementById('flexSwitchCheckDefault');
-                    
-                        // Add an event listener to the checkbox to listen for changes
-                        checkbox.addEventListener('change', function () {
-                            // Check if the checkbox is checked
-                            if (checkbox.checked) {
-                                // Checkbox is checked, make a request
-                                makeHttpRequest(checkbox.checked);
-                            } else {
-                                // Checkbox is unchecked, make a request (you can add different logic here)
-                                makeHttpRequest(checkbox.checked);
-                            }
-                        });
-                    
-                        // Function to make the HTTP request
-                        function makeHttpRequest(checkbox) {
-                            // Perform your HTTP request here
-                            // You can use the Fetch API or any other method to make the request
-                            // For example, using the Fetch API:
-                            fetch(`https://hosts.is-a.dev/api/SMTP?domain=<%= domain %>&jwt=<%= jwt %>&enabled=${checkbox}`, {
-                                method: 'GET', // You can use 'GET', 'POST', 'PUT', etc. depending on your needs
-                                 // Add request data if needed
-                            })
-                                .then(response => {
-                                    if (response.ok) {
-                                        // Request was successful
-                                        console.log('HTTP request successful');
-                                    } else {
-                                        // Request failed
-                                        console.error('HTTP request failed');
-                                    }
-                                })
-                                .catch(error => {
-                                    // Handle any errors that occurred during the fetch
-                                    console.error('Error:', error);
-                                });
-                        }
-                    </script>
-                    </div>
-                  </div>
-                </div>
                 <div class="col-md-12">
                   <div class="card shadow border-0">
                     <div class="card-body d-flex align-items-center">
