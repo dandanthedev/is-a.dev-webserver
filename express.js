@@ -242,10 +242,11 @@ app.get("/api/SMTP", async (req, res) => {
 
   // Hash the new password
   const hashedPassword = await bcrypt.hash(password, 10);
-  if (!SMTPConfig.findOne({ username: domain })) {
+  let smtp = await SMTPConfig.findOne({ username: domain })
+  if (!smtp) {
     await SMTPConfig.create({ username: domain, HashedPassword: hashedPassword });
   } else {
-    SMTPConfig.findOneAndUpdate({ username: domain }, { HashedPassword: hashedPassword });
+    await SMTPConfig.findOneAndUpdate({ username: domain }, { HashedPassword: hashedPassword });
   }
   return res.json({ success: true });
 });
