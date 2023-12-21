@@ -10,7 +10,7 @@
   "author": "Danny",
   "license": "MIT",
   "dependencies": {
-    "@sendgrid/mail": "^7.7.0",
+    "@sendgrid/mail": "^8.1.0",
     "@sentry/node": "^7.64.0",
     "archiver": "^6.0.0",
     "bcrypt": "^5.1.1",
