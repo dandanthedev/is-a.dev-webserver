@@ -1,5 +1,4 @@
 const fs = require("fs");
-const chmod = require("chmod");
 require("dotenv").config();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -65,7 +64,6 @@ async function LinkDiscord(domain, code) {
     }
   );
   // change permissions
-  chmod(`content/${domain}/.well-known/discord`, 0o644);
   return true;
 }
 
