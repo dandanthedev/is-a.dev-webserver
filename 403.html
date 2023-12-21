@@ -1,0 +1,68 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Internal Server Error</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://api.fonts.coollabs.io/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+
+    <style>
+      .vt323 {
+        font-family: "VT323", monospace;
+      }
+      .bg {
+        background-color: #0f0c19;
+      }
+    </style>
+  </head>
+  <body
+    class="bg text-white text-center vt323 text-4xl flex flex-col justify-center items-center h-screen"
+  >
+    <img
+      src="https://raw.githubusercontent.com/is-a-dev/register/4c8cd44942205ccda6b6c7ecdc2974b110f39615/media/logo.png"
+      class="fixed top-0 left-0"
+      width="100px"
+      height="100px"
+    />
+    <span id="typehere" class="display-inline-block cursor-pointer">
+      <noscript>
+        Internal Server Error <br />Sorry, something went wrong.
+      </noscript>
+    </span>
+  </body>
+  <script>
+    var typed = new Typed("#typehere", {
+      strings: [
+        "Whoops, something went wrong.",
+        "Our servers are experiencing technical difficulties.",
+        "There was an error processing your request.",
+        "We're sorry, but we can't process your request at this time.",
+        "Please try again later.",
+        "We're working on fixing the problem.",
+        "We apologize for any inconvenience.",
+        "We're not sure what happened.",
+        "We're having some trouble.",
+        "Please try again later.",
+        "We'll get back to you as soon as we can.",
+        "We're experiencing a technical issue.",
+        "We're not sure what's going on.",
+        "We'll investigate the issue.",
+        "We'll let you know when we know more.",
+        "Thanks for your patience.",
+        "We're sorry for the inconvenience.",
+        "Please contact us if you need further assistance.",
+        "Thank you for your understanding.",
+        "We appreciate your patience.",
+      ],
+      typeSpeed: 50,
+      //disable cursor
+      showCursor: false,
+
+      loop: true,
+    });
+  </script>
+</html>

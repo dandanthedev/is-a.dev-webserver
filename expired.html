@@ -2,7 +2,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign in</title>
+    <title>Site not Found</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://api.fonts.coollabs.io/css2?family=VT323&display=swap"
@@ -18,14 +18,6 @@
         background-color: #0f0c19;
       }
     </style>
-    <script>
-      function signIn() {
-        //send GET request to this page with password as parameter
-        var password = document.getElementById("password").value;
-        var url = window.location.href + "?password=" + password;
-        window.location.href = url;
-      }
-    </script>
   </head>
   <body
     class="bg text-white text-center vt323 text-4xl flex flex-col justify-center items-center h-screen"
@@ -36,20 +28,20 @@
       width="100px"
       height="100px"
     />
-    <div>
-      <input
-        type="password"
-        id="password"
-        class="text-center text-white text-4xl bg-black border-2 border-white rounded-lg p-2"
-        placeholder="Password"
-        onkeydown="if (event.keyCode == 13) signIn()"
-      />
-      <button
-        class="bg-black border-2 border-white rounded-lg p-2"
-        onclick="signIn()"
-      >
-        Sign in
-      </button>
-    </div>
+    <span id="typehere" class="display-inline-block">
+      <noscript> This page was not found. </noscript>
+    </span>
   </body>
+  <script>
+    var typed = new Typed("#typehere", {
+      strings: [
+        "Sorry that link has expired.",
+      ],
+      typeSpeed: 50,
+      //disable cursor
+      showCursor: true,
+      //loop
+      loop: false,
+    });
+  </script>
 </html>

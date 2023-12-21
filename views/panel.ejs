@@ -1,0 +1,230 @@
+<link href="https://unpkg.com/@webpixels/css/dist/index.css" rel="stylesheet">
+<div class="d-flex flex-column flex-lg-row h-lg-full bg-surface-secondary">
+    <!-- Vertical Navbar -->
+    <nav class="navbar show navbar-vertical h-lg-screen navbar-expand-lg px-0 py-3 py-lg-0 navbar-light bg-light border-bottom border-bottom-lg-0 border-end-lg" id="navbarVertical">
+      <div class="container-fluid">
+        <!-- Toggler -->
+        <button class="navbar-toggler ms-n2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-controls="sidebarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- Brand -->
+        <a class="navbar-brand py-lg-5 mb-lg-5 px-lg-6 me-0" href="#">
+          <img src="https://raw.githubusercontent.com/is-a-dev/register/main/media/logo.png" alt="...">
+        </a>
+        <!-- User menu (mobile) -->
+        <div class="navbar-user d-lg-none">
+          <!-- Dropdown -->
+          <div class="dropdown">
+            <!-- Toggle -->
+            <a href="#" id="sidebarAvatar" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <div class="avatar-parent-child">
+                <img alt="Image Placeholder" src="<%= profilepic %>" class="avatar avatar- rounded-circle">
+                <span class="avatar-child avatar-badge bg-success"></span>
+              </div>
+            </a>
+          </div>
+        </div>
+        <!-- Collapse -->
+        <div class="collapse navbar-collapse" id="sidebarCollapse">
+          <!-- Form -->
+          <form class="mt-4 mb-3 d-none">
+            <div x-data="{focused: false}" :class="{ 'focused': focused }">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text border-end-0 rounded-left-pill" id="basic-addon1">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+                    <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                  </svg>
+                </span>
+                <input type="text" class="form-control border-left-0 ps-0 rounded-end-pill" placeholder="Search" aria-label="Username" aria-describedby="basic-addon1" @focus="focused = !focused" @click.away="focused = false">
+              </div>
+            </div>
+          </form>
+          <!-- Navigation -->
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="https://manage.is-a.dev">
+                <i class="bi bi-house"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <i class="bi bi-bar-chart"></i> Analytics
+              </a>
+            </li>
+          </ul>
+          <!-- Divider -->
+          <hr class="navbar-divider my-5 opacity-20">
+          <!-- Navigation -->
+        </div>
+      </div>
+    </nav>
+    <!-- Main content -->
+    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
+      <!-- Header -->
+      <header class="bg-surface-primary border-bottom pt-6">
+        <div class="container-fluid">
+          <div class="mb-npx">
+            <div class="row align-items-center">
+              <div class="col-sm-6 col-12 mb-4 mb-sm-0">
+                <!-- Title -->
+                <title><%= domain %> - Hosting Settings</title>
+                <h1 class="h2 mb-0 ls-tight">Hosting Settings</h1>
+              </div>
+              <!-- Actions -->
+              <div class="col-sm-6 col-12 text-sm-end">
+              </div>
+            </div>
+            <!-- Nav -->
+          </div>
+        </div>
+      </header>
+      <!-- Main -->
+      <main class="py-6 bg-surface-secondary">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-xl-7 mx-auto">
+              <!-- Profile picture -->
+              <div class="card shadow border-0 mt-4 mb-10">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div>
+                      <div class="d-flex align-items-center">
+                        <a href="#" class="avatar avatar-lg bg-warning rounded-circle text-white">
+                          <img alt="..." src="<%= profilepic %>">
+                        </a>
+                        <div class="ms-4">
+                          <span class="h4 d-block mb-0"><%= username %></span>
+                          <a class="text-sm font-semibold text-muted"><%= domain %></a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+<form id="passwordForm">
+  <div class="col-md-6">
+    <div class="">
+      <label class="form-label" for="password">Set Password</label>
+      <input type="password" class="form-control" id="password">
+      <button type="submit" class="btn btn-sm btn-primary">Set</button>
+    </div>
+  </div>
+</form>
+<div id="passwordResponse" class="text-success mt-2"></div>
+                                <div class="card-body">
+                                    <h5 class="mb-2">Discord Linking</h5>
+                                    <p class="text-sm text-muted mb-6">
+                                        Link your Discord account to your profile.
+                                    </p>
+                                    <form id="discordLinkForm">
+                                        <div class="mb-3">
+                                            <label for="discordContents" class="form-label">Discord Contents from settings</label>
+                                            <input type="text" class="form-control" id="discordContents" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary">Link Discord</button>
+                                    </form>
+                                    <div id="discordLinkResponse" class="text-success mt-2"></div>
+                                </div>
+                            </div>
+
+                            <!-- JavaScript code for form submission -->
+                            <script>
+                                // Existing JavaScript code for Set Password form
+                                // ... (The code you provided for Set Password form)
+
+                                // Discord Linking Form
+                                document.getElementById("discordLinkForm").addEventListener("submit", function (e) {
+                                    e.preventDefault(); // Prevent the default form submission
+
+                                    // Get the input values
+                                    const discordContents = document.getElementById("discordContents").value;
+
+                                    // Construct the URL with query parameters for the Discord Linking API
+                                    const discordLinkUrl = `https://hosts.is-a.dev/api/discord?${discordContents}&jwt=<%= jwt %>&domain=<%= domain %>`; // Replace with the actual API endpoint
+
+                                    // Make a fetch request
+                                    fetch(discordLinkUrl, {
+                                        method: "GET", // Use the appropriate HTTP method (POST, GET, etc.)
+                                        cache: 'no-store',
+                                    })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                document.getElementById("discordLinkResponse").textContent = "Discord linking failed.";
+                                                document.getElementById("discordLinkResponse").classList.add("text-danger");
+                                            }
+                                            else if (response.ok) {
+                                                document.getElementById("discordLinkResponse").textContent = "Discord linked successfully!";
+                                                document.getElementById("discordLinkResponse").classList.add("text-success");
+                                            }
+                                            else if (response.status === 401) {
+                                                throw new Error("Unauthorized");
+                                            }
+                                            return response.json();
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                        });
+                                });
+                            </script>
+                        </div>
+                    </div>
+
+
+<script>
+  document.getElementById("passwordForm").addEventListener("submit", function (e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Get the input values
+    const password = document.getElementById("password").value;
+
+    // Construct the URL with query parameters
+    const url = `https://hosts.is-a.dev/api/domain/set-password?jwt=<%= jwt %>&domain=<%= domain %>&password=${password}`;
+
+    // Make a fetch request
+    fetch(url, {
+      method: "GET", // You can change the method if needed
+      cache: 'no-store',
+    })
+      .then(response => {
+        if (!response.ok) {
+          document.getElementById("passwordResponse").textContent = "Password change failed.";
+          document.getElementById("passwordResponse").classList.add("text-danger");
+        }
+        else if (response.ok) {
+          document.getElementById("passwordResponse").textContent = "Password set successfully!";
+          document.getElementById("passwordResponse").classList.add("text-success");
+        }
+        else if (response.status === 401) {
+          throw new Error("Unauthorized");
+        }
+        return response.json();
+      })
+  });
+</script>
+
+              <hr class="my-10" />
+              <!-- Individual switch cards -->
+                <div class="col-md-12">
+                  <div class="card shadow border-0">
+                    <div class="card-body d-flex align-items-center">
+                      <div>
+                        <h5 class="text-danger mb-2">Export data</h5>
+                        <p class="text-sm text-muted">
+                          Export all your data in a ZIP file.
+                        </p>
+                      </div>
+                      <div class="ms-auto">
+                        <button onclick="window.location.href='https://hosts.is-a.dev/api/download?domain=<%= domain %>&jwt=<%= jwt %>';" type="button" class="btn btn-sm btn-danger">Export</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  

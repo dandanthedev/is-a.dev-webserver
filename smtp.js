@@ -1,10 +1,21 @@
 const fs = require("fs");
 const SMTPServer = require("smtp-server").SMTPServer;
+const nodemailer = require('nodemailer');
 const smtpPort = 25;
+
+let transporter = nodemailer.createTransport({
+  service: 'postfix',
+  host: 'localhost',
+  secure: false,
+  port: 2525,
+  //auth: { user: 'yourlinuxusername@edison.example.com', pass: 'yourlinuxuserpassword' },
+  tls: { rejectUnauthorized: false }
+});
 
 const server = new SMTPServer({
   secure: false, // Set to true for secure connections (TLS)
   authOptional: false, // Require authentication
+  banner: "Is-a.dev SMTP Server",
   onAuth: (auth, session, callback) => {
     try {
       const { username, password } = auth;
@@ -37,10 +48,41 @@ const server = new SMTPServer({
       data += chunk;
     });
     stream.on("end", () => {
-      console.log("Received email data:", data);
-      callback();
+      transporter.on("end", () => {
+        console.log("Email sent successfully!");
+        callback();
+      });
+    
+      transporter.on("error", (err) => {
+        console.error("Error sending email:", err);
+        callback();
+      });
+    
+      // Send email data
+      transporter.send(
+        {
+          from: mailFrom,
+          to: rcptTo,
+          data: data,
+        },
+        (err) => {
+          if (err) {
+            console.error("Error sending email:", err);
+          }
+          transporter.quit();
+        }
+      );
     });
   },
+  onMailFrom(address, session, callback) {
+    const allowedDomain = `${session.user}.is-a.dev`;
+    if (!address.address.endsWith(`@${allowedDomain}`)) {
+      return callback(
+        new Error(`Only addresses ending with @${allowedDomain} are allowed to send mail`)
+      );
+    }
+    return callback(); // Accept the address
+  }
 });
 
 server.on("error", (err) => {

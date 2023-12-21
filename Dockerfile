@@ -6,20 +6,13 @@ WORKDIR /usr/src/dev
 
 # Copy and Install our site
 COPY package.json /usr/src/dev
+# RUN apt-get update && apt-get install -y supervisor
+# COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ENV CI=false
 
 RUN npm install
 COPY . /usr/src/dev
 
 
-
-
-# For Debugging
-#RUN apt-get update && apt-get install -y \
-#    nano \
-#    curl \
-#    git \
-#    && rm -rf /var/lib/apt/lists/*
-
 # Start me!
-CMD ["npm", "."]
+CMD ["node", "index.js"]

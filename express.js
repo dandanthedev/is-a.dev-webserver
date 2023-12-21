@@ -2,10 +2,41 @@ require("dotenv").config();
 const Sentry = require("@sentry/node");
 const express = require("express");
 const session = require("express-session");
+const path = require('path');
+const cron = require('node-cron');
 const cors = require("cors");
-const { generateConfig, getUserFiles } = require("./functions.js");
+const archiver = require('archiver');
+const { generateConfig, getUserFiles, generateConfigWithActivation, activateDomain, LinkDiscord } = require("./functions.js");
+const { generateLink, checkLinkExpiration } = require("./downloads.js");
 const { getSocketJWT } = require("./auth.js");
+const { sgMail } = require('@sendgrid/mail');
 const app = express();
+const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+const userSchema = require('./data'); // Import your Mongoose schema definition
+const exportSchema = require('./exports'); // 
+const checkExports = require('./expiredExports'); //
+
+const SMTPConfigSchema = new mongoose.Schema({
+  username: String,
+  HashedPassword: String,
+},{ collection: "SMTP" });
+
+// Create a mongoose model based on the schema
+const SMTPConfig = mongoose.model('SMTP', SMTPConfigSchema);
+
+// bcrypt
+const bcrypt = require('bcrypt');
+
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
+const dbName = process.env.DATABASE_NAME || 'your_database_name';
+
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+mongoose.connect(uri + "hosting-config", { useNewUrlParser: true, useUnifiedTopology: true });
+
+const User = mongoose.model("hostingdata"); 
+
 Sentry.init({
   dsn: "https://244a1ad4b427c80530cffbebc2c7b3a4@o4505716264599552.ingest.sentry.io/4505716341800960",
   integrations: [
@@ -25,8 +56,12 @@ Sentry.init({
 // Trace incoming requests
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
+app.set("view engine", "ejs");
 
 const port = 3000;
+
+
+
 
 const http = require("http");
 const server = http.createServer(app);
@@ -48,6 +83,8 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+
 app.use((req, res, next) => {
   if (req.url.includes("config.json"))
     return res.status(404).send("nice try ;)");
@@ -56,16 +93,482 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+app.use(cors())
 
 const fs = require("fs");
 const { getJWT } = require("./jwt");
+const req = require("express/lib/request.js");
+
+
 
 //api routes
+app.get("/api/getall", async (req, res) => {
+  try {
+    // get a list of all domains from the db
+    const domains = await User.find({}).exec();
+    // filter only the domain no other data
+    const domainList = domains.map((domain) => domain.domain);
+    // return the list
+    return res.json({ domains: domainList });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/upload", async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+    let user = getJWT(jwt);
+    if (!user) return res.status(403).send("Invalid JWT");
+
+    let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+    data = await data.json();
+
+    if (data.error) return res.status(500).send(data.error);
+    if (data.owner?.username != user.user.login)
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this domain" });
+
+    //check if directory content/host exists
+    if (!fs.existsSync(`content/${domain}`))
+      return res.status(404).json({ error: "Domain dosnt' exist" });
+
+    //check if file is in request
+    if (!req.files) return res.status(400).json({ error: "No file uploaded" });
+
+    // save file to disk
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+app.get('/api/protected/:domain/:linkId', checkLinkExpiration, (req, res) => {
+  // Serve a file (you might need to adjust the file path)
+  res.render('archive', { domain: req.params.domain + ".is-a.dev", download: req.params.linkId });
+  
+
+});    
+
+app.get('/api/download', async (req, res) => {
+  // get user input
+  let domain = req.query.domain;
+  domain = domain.split(".is-a.dev")[0];
+  const jwt = req.query.jwt;
+
+  // check if user is authenticated
+  const user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+
+  // check if user is owner of the domain
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username != user.user.login)
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
+
+  if (!fs.existsSync(`content/${domain}`))
+    return res.status(404).json({ error: "Domain dosnt' exist" });
+      
+  const folderToZip = path.join(__dirname, `/content/${domain}/`);
+  const zipFileName = `${domain}.zip`;
+
+  // Create a writable stream for the zip file
+  const output = fs.createWriteStream(zipFileName);
+
+  // Create an archiver instance
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Set compression level
+  });
+
+  // Pipe the output stream to the archive
+  archive.pipe(output);
+
+  // Append the entire folder to the archive
+  archive.directory(folderToZip, false);
+
+  // Finalize the archive
+  archive.finalize();
+
+  // Set response headers to indicate a downloadable file
+  res.attachment(zipFileName);
+
+  // Pipe the zip file to the response
+  output.on('close', () => {
+    res.status(200).sendFile(zipFileName, { root: __dirname });
+  });
+});
+
+app.get("/api/discord", async (req, res) => {
+  let domain = req.query.domain;
+  domain = domain.split(".is-a.dev")[0];
+  let jwt = req.query.jwt;
+  let contents = req.query.dh;
+  let user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+  if (!domain) return res.status(400).send("No domain provided");
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
+
+  LinkDiscord(domain, contents)
+  return res.json({ success: true });
+});
+  
+app.get("/api/SMTP", async (req, res) => {
+  let domain = req.query.domain;
+  let jwt = req.query.jwt;
+  let password = req.query.password;
+  domain = domain.split(".is-a.dev")[0];
+  let user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+  if (!domain) return res.status(400).send("No domain provided");
+  if (!password) return res.status(400).send("No password provided");
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
+
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(password, 10);
+  let smtp = await SMTPConfig.findOne({ username: domain })
+  if (!smtp) {
+    await SMTPConfig.create({ username: domain, HashedPassword: hashedPassword });
+  } else {
+    await SMTPConfig.findOneAndUpdate({ username: domain }, { HashedPassword: hashedPassword });
+  }
+  return res.json({ success: true });
+});
+
+app.get("/api/panel", async (req, res) => {
+  let jwt = req.query.jwt;
+  let domain = req.query.domain;
+  let user = getJWT(jwt);
+  let profilepic = `https://avatars.githubusercontent.com/${user.user.login}`
+  if (!user) return res.status(403).send("Invalid JWT");
+
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  const domainData = await User.findOne({ domain }).exec();
+  let EMAIL = '';
+  if (domainData.EMAIL == undefined) {
+    EMAIL = "";
+  } else {
+    // if domainData.EMAIL is true then set EMAIL to checked
+    if (domainData.EMAIL == true) {
+      EMAIL = "checked";
+    }
+    else {
+      EMAIL = "";
+    }
+  }
+    
+  domain = domain + ".is-a.dev"
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "You are not the owner of this domain" });
+  return res.render("panel", { username: user.user.login, profilepic: profilepic, domain: domain, SMTP: EMAIL, jwt: jwt });
+});
+
+app.get("/api/domain", async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+    
+    let user = getJWT(jwt);
+
+    let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+    data = await data.json();
+
+    
+    if (data.error) return res.status(500).send(data.error);
+
+    if (!fs.existsSync(`content/${domain}`))
+      return res.status(404).json({ error: "Domain does not exist" });
+    
+    
+    return res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+app.get("/api/user/activate", async (req, res) => {
+  let domain = req.headers.host;
+  let jwt = req.query.jwt;
+  domain = domain.split(":")[0];
+  domain = domain.split(".is-a.dev")[0];
+  let user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+  if (!domain) return res.status(400).send("No domain provided");
+  // check if user owns domain
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "We could not verify you own this subdomain. If your pr was merged less then an hour ago then try again in 30 minutes." });
+  activateDomain(domain, async (err, result) => {
+    if (err) {
+      console.error('Error:', err);
+      return;
+    }
+    
+    if (result) {
+      return res.redirect(`https://${domain}.is-a.dev/`);
+    } else {
+      return res.status(500).json({ error: "Contact William for assistance" });
+    }
+  });
+
+});
+
+app.get("/api/data/exports", async (req, res) => {
+  let uuid = req.query.uuid;
+  if (!uuid) return res.status(400).send("No uuid provided");
+  // check if uuid exists in database
+  let data = await exportSchema.findOne({ _id: uuid });
+  if (!data) return res.status(404).send("UUID not found");
+  // check if uuid is expired
+  if (data.expiryDate < Date.now()) return res.status(410).send("Export has expired");
+  // check if file exists
+  if (!fs.existsSync(`exports/${data.fileName}`)) return res.status(404).send("File not found");
+
+  // serve file
+  return res.sendFile(__dirname + `/exports/${data.fileName}`);
+}
+);
+
+app.get("/api/staff/delete", async (req, res) => {
+  let token = req.query.token;
+  if (!token) return res.status(400).send("No token provided");
+  if (token !== process.env.STAFF_TOKEN) return res.status(403).send("Invalid token");
+  let domain = req.query.domain;
+  const folderToZip = path.join(__dirname, `/content/${domain}/`);
+  const zipFileName = path.join(__dirname, `/exports/${domain}.zip`);
+
+  // Create a writable stream for the zip file
+  const output = fs.createWriteStream(zipFileName);
+
+  // Create an archiver instance
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Set compression level
+  });
+
+  // Pipe the output stream to the archive
+  archive.pipe(output);
+
+  // Append the entire folder to the archive
+  archive.directory(folderToZip, false);
+
+  // Finalize the archive
+  archive.finalize();
+
+  // create a uuid
+  const uuid = require('uuid').v4();
+
+  let expiryDate = Date.now() + 1000 * 60 * 60 * 24 * 7;
+
+  // add uuid to database
+  const newExport = new exportSchema({
+    _id: uuid,
+    domain: domain,
+    expiryDate: expiryDate,
+    fileName: `${domain}.zip`,
+    avaliable: true,
+  });
+  await newExport.save();
+  
+  // delete domain
+  await User.findOneAndDelete({ domain });
+  // delete directory
+  fs.rmSync(`content/${domain}`, { recursive: true });
+  return res.json({ success: true, export: `https://hosts.is-a.dev/api/data/exports?uuid=${uuid}`, expiryDate: expiryDate });
+}
+);
+
+
+app.get("/api/domain/delete", async (req, res) => {
+  let domain = req.query.domain;
+  let jwt = req.query.jwt;
+  if (!jwt) return res.status(400).send("No JWT provided");
+  let user = getJWT(jwt);
+  if (!user) return res.status(403).send("Invalid JWT");
+  if (!domain) return res.status(400).send("No domain provided");
+  // check if user owns domain
+  let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+  data = await data.json();
+  if (data.error) return res.status(500).send(data.error);
+  if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+    return res
+      .status(403)
+      .json({ error: "We could not verify you own this subdomain. If your pr was merged less then an hour ago then try again in 30 minutes." });
+  //export
+  const folderToZip = path.join(__dirname, `/content/${domain}/`);
+  const zipFileName = path.join(__dirname, `/exports/${domain}.zip`);
+
+  // Create a writable stream for the zip file
+  const output = fs.createWriteStream(zipFileName);
+
+  // Create an archiver instance
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Set compression level
+  });
+
+  // Pipe the output stream to the archive
+  archive.pipe(output);
+
+  // Append the entire folder to the archive
+  archive.directory(folderToZip, false);
+
+  // Finalize the archive
+  archive.finalize();
+
+  // create a uuid
+  const uuid = require('uuid').v4();
+
+  // add uuid to database
+  const newExport = new exportSchema({
+    _id: uuid,
+    domain: domain,
+    expiryDate: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    fileName: `${domain}.zip`,
+    avaliable: true,
+  });
+  await newExport.save();
+  
+  // delete domain
+  await User.findOneAndDelete({ domain });
+  // delete directory
+  fs.rmSync(`content/${domain}`, { recursive: true });
+  return res.json({ success: true, export: `https://hosts.is-a.dev/api/data/exports?uuid=${uuid}` });
+}
+);
+
+
+app.get("/api/activate", async (req, res) => {
+  let domain = req.query.domain;
+  let NOTIFY = req.query.NOTIFY_TOKEN;
+  // if notify token dosnt match process.env.NOTIFY_TOKEN return 403
+  if (NOTIFY !== process.env.NOTIFY_TOKEN) return res.status(403).send("Invalid token");
+
+  //let activation_code = req.query.activation_code;
+  activateDomain(domain, async (err, result) => {
+    if (err) {
+      console.error('Error:', err);
+      return;
+    }
+    
+    if (result) {
+      return res.json({ success: true });
+    } else {
+      return res.status(500).json({ error: "Invalid activation code" });
+    }
+  });
+});
+
+
+app.get("/api/preregister", async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    let jwt = req.query.jwt;
+    let pr = req.query.pr;
+    let user = getJWT(jwt);
+    if (!user) return res.status(403).send("Invalid JWT");
+
+    let data = await fetch(process.env.API_URL + "/domains/" + domain + "/get");
+    data = await data.json();
+    let email = user.emails.find((email) => email.primary)
+
+    if (data.error) return res.status(500).send(data.error);
+
+    if (data.info) {
+      //check if directory content/host exists
+      if (fs.existsSync(`content/${domain}`))
+      return res.status(400).json({ error: "Domain already exists" });
+
+      //duplicate skeleton
+      fs.mkdirSync(`content/${domain}`);
+      let files = fs.readdirSync("skeleton");
+      for (let file of files) {
+        fs.copyFileSync(`skeleton/${file}`, `content/${domain}/${file}`);
+      }
+      let response = generateConfigWithActivation(domain, email.email);
+      let activation_code = "notUsed";
+      console.log(activation_code + " " + email.email + " " + domain);
+      await fetch(`https://notify-api.is-a.dev/api/preregister?domain=${domain}&pr=${pr}&activation_code=${activation_code}&token=${process.env.NOTIFY_TOKEN}`)
+      return res.json({ success: true });
+    }
+    if (data.owner?.username != user.user.login)
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this domain" });    
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+app.get('/api/domain/set-password', async (req, res) => {
+  try {
+    let domain = req.query.domain;
+    domain = domain.split(".is-a.dev")[0];
+    let jwt = req.query.jwt;
+
+    let user = getJWT(jwt);
+    if (!user) return res.status(403).send('Invalid JWT');
+
+    // Fetch data from API to authenticate the user
+    let data = await fetch(process.env.API_URL + '/domains/' + domain + '/get');
+    data = await data.json();
+
+    if (data.error) return res.status(500).send(data.error);
+    if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
+      return res
+        .status(403)
+        .json({ error: 'You are not the owner of this domain' });
+
+    let password = req.query.password;
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update the user's password in the database
+    const User = mongoose.model('hostingdata'); // Replace with your Mongoose model name
+    const updatedUser = await User.findOneAndUpdate(
+      { domain },
+      { HashedPassword: hashedPassword },
+      { new: true } // Return the updated user document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 app.get("/api/register", async (req, res) => {
   try {
     let domain = req.query.domain;
@@ -78,7 +581,7 @@ app.get("/api/register", async (req, res) => {
     data = await data.json();
 
     if (data.error) return res.status(500).send(data.error);
-    if (data.owner?.username != user.user.login)
+    if (data.owner?.username.toLowerCase() != user.user.login.toLowerCase())
       return res
         .status(403)
         .json({ error: "You are not the owner of this domain" });
@@ -95,7 +598,7 @@ app.get("/api/register", async (req, res) => {
     }
     let response = generateConfig(domain);
 
-    return res.json({ success: true, pass: response.ftp_password });
+    return res.json({ success: true, pass: 'NOT ready' });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err });
@@ -128,45 +631,60 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 
 app.get("*", async (req, res) => {
   try {
-    //Domain variable
+    // Domain variable
     let domain = req.headers.host;
     domain = domain.split(":")[0];
     domain = domain.split(".is-a.dev")[0];
 
-    //Check if the domain exists
-    if (!fs.existsSync(`content/${domain}`))
-      return res.status(404).sendFile(__dirname + "/404.html");
+    // Connect to MongoDB and find user data
+    const User = mongoose.model("hostingdata"); // Replace with your Mongoose model name
+    const user = await User.findOne({ domain }).exec();
 
-    //Load config
-    let config = fs.readFileSync(__dirname + `/content/${domain}/config.json`);
-    config = JSON.parse(config);
-
-    //Password protection
-    if (config.password !== undefined && req.body.password != config.password)
-      return res.sendFile(__dirname + "/login.html");
-
-    //Get file
-    let file = req.url;
-    if (file == "/") file = "index.html";
-    if (file.includes(".."))
-      return res.status(403).sendFile(__dirname + "/403.html");
-    if (file.startsWith("/")) file = file.substring(1);
-
-    //Check if file exists
-    let path = `content/${domain}/${file}`;
-    if (!fs.existsSync(path)) {
-      //if custom 404 exists, send it, else send default
-      if (fs.existsSync(`${domain}/404.html`))
-        return res.status(404).sendFile(`${domain}/404.html`);
+    if (!user) {
       return res.status(404).sendFile(__dirname + "/404.html");
     }
 
-    //Serve file
+    let file = req.url;
+    // Remove query string
+    if (file.includes("?")) file = file.split("?")[0];
+
+    // Password protection
+    if (user.HashPagePassword && !bcrypt.compareSync(req.query.password, user.HashPagePassword)) {
+      return res.sendFile(__dirname + "/login.html");
+    }
+
+    if (user.ACTIVATED !== true) {
+      return res.sendFile(__dirname + "/activation.html");
+    }
+
+    // Get file
+    if (file.includes("..")) {
+      return res.status(403).sendFile(__dirname + "/403.html");
+    }
+    if (file.startsWith("/")) {
+      file = file.substring(1);
+    }
+
+    // Check if file exists
+    let path = `content/${domain}/${file}`;
+    // If path is a directory, add index.html
+    if (fs.lstatSync(path).isDirectory()) {
+      path += "/index.html";
+    }
+    if (!fs.existsSync(path)) {
+      // If custom 404 exists, send it, else send default
+      if (fs.existsSync(`content/${domain}/404.html`)) {
+        return res.status(404).sendFile(`content/${domain}/404.html`);
+      }
+      return res.status(404).sendFile(__dirname + "/404.html");
+    }
+
+    // Serve file
     return res.sendFile(__dirname + "/" + path);
   } catch (err) {
     console.log(err);
     return res.status(500).sendFile(__dirname + "/500.html");
-  }
+  } 
 });
 
 
@@ -272,7 +790,7 @@ io.on("connection", async (socket) => {
         });
       } else {
         send.type = "file";
-        send.content = fs.readFileSync(`content/${socket.domain}/${file}`);
+        send.content = fs.readFileSync(`content/${socket.domain}/${file}`).toString();
       }
 
       socket.emit("file", send);
@@ -300,5 +818,16 @@ io.on("connection", async (socket) => {
 });
 
 server.listen(3000, () => {
+  cron.schedule('0 * * * *', async () => {
+    try {
+      checkExports();
+    }
+    catch (error) {
+      console.error('Error removing expired links:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Europe/London"
+  });
   console.log("listening on *:3000");
 });
